@@ -116,6 +116,13 @@ a {
   text-decoration: none;
 }
 
+.koan-link-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .koan-link-title {
   font-weight: 600;
 }
@@ -265,6 +272,24 @@ a {
 
 .failed {
   color: #b42318;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border: 1px solid currentColor;
+  font-size: 0.8rem;
+}
+
+.pending {
+  color: #5d6b78;
+}
+
+.progress-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .sr-only {

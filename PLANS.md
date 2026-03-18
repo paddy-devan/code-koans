@@ -175,12 +175,14 @@ Make the Vega koan page feel coherent and usable.
 - improved layout
 - clearer distinction between target chart and user preview
 - clearer instructions
+- local draft persistence for the editable spec
 - reset-to-starting-spec
 - optional dataset viewer
 - improved results panel
 
 ## Acceptance criteria
 - koan page is easy to use
+- in-progress spec edits survive refresh in the same browser
 - user can recover from mistakes easily
 
 ## Not in scope

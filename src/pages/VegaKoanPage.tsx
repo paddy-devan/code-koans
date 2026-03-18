@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { ValidationResultPanel } from "../components/ValidationResultPanel";
 import { VegaChart } from "../components/VegaChart";
+import { isKoanCompleted, markKoanCompleted } from "../lib/progress";
 import { getVegaKoanById } from "../koans/vegaKoans";
 import type { VegaValidationResult } from "../validation/vegaValidation";
 import { validateVegaSpec } from "../validation/vegaValidation";
@@ -16,6 +17,7 @@ export function VegaKoanPage() {
   const koan = koanId ? getVegaKoanById(koanId) : undefined;
   const [specText, setSpecText] = useState("");
   const [validationResult, setValidationResult] = useState<VegaValidationResult | null>(null);
+  const [isCompleted, setIsCompleted] = useState(false);
 
   useEffect(() => {
     if (!koan) {
@@ -24,6 +26,7 @@ export function VegaKoanPage() {
 
     setSpecText(formatSpec(koan.startingSpec));
     setValidationResult(null);
+    setIsCompleted(isKoanCompleted(koan.id));
   }, [koan]);
 
   const parsedSpec = useMemo(() => {
@@ -47,7 +50,7 @@ export function VegaKoanPage() {
   if (!koan) {
     return (
       <section className="panel">
-        <p className="eyebrow">Checkpoint 3</p>
+        <p className="eyebrow">Checkpoint 6</p>
         <h2>Koan Not Found</h2>
         <p>No Vega koan exists for the id "{koanId ?? "unknown"}".</p>
         <p>
@@ -61,9 +64,15 @@ export function VegaKoanPage() {
 
   return (
     <section className="panel">
-      <p className="eyebrow">Checkpoint 5</p>
+      <p className="eyebrow">Checkpoint 6</p>
       <h2>{koan.title}</h2>
       <p>{koan.summary}</p>
+      <p className="progress-line">
+        Status:{" "}
+        <span className={isCompleted ? "status-badge completed" : "status-badge pending"}>
+          {isCompleted ? "Completed" : "Not completed"}
+        </span>
+      </p>
 
       <div className="chart-grid">
         <VegaChart dataset={koan.dataset} spec={koan.targetSpec} title="Target Chart" />
@@ -138,7 +147,13 @@ export function VegaKoanPage() {
                 return;
               }
 
-              setValidationResult(validateVegaSpec(koan, parsedSpec.spec));
+              const nextValidationResult = validateVegaSpec(koan, parsedSpec.spec);
+              setValidationResult(nextValidationResult);
+
+              if (nextValidationResult.passed) {
+                markKoanCompleted(koan.id);
+                setIsCompleted(true);
+              }
             }}
             disabled={!parsedSpec?.spec}
           >
