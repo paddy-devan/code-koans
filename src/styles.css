@@ -91,3 +91,66 @@ a {
 .panel p:last-child {
   margin-bottom: 0;
 }
+
+.koan-list {
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.koan-list-item + .koan-list-item {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #d5dce3;
+}
+
+.koan-link,
+.inline-link {
+  color: #0a5c83;
+}
+
+.koan-link {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  text-decoration: none;
+}
+
+.koan-link-title {
+  font-weight: 600;
+}
+
+.koan-link-meta {
+  color: #5d6b78;
+  font-size: 0.95rem;
+  text-transform: capitalize;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.detail-grid h3 {
+  margin-top: 0;
+}
+
+.meta-list {
+  margin: 0;
+}
+
+.meta-list div + div {
+  margin-top: 12px;
+}
+
+.meta-list dt {
+  font-weight: 600;
+}
+
+.meta-list dd {
+  margin: 4px 0 0;
+  color: #5d6b78;
+  text-transform: capitalize;
+}

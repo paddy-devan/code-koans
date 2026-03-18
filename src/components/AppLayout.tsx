@@ -4,7 +4,7 @@ const navItems = [
   { to: "/", label: "Home", end: true },
   { to: "/vega", label: "Vega" },
   { to: "/vega/koans", label: "Koans" },
-  { to: "/vega/koans/placeholder", label: "Koan Page" },
+  { to: "/vega/koans/bar-chart-basics", label: "Koan Page" },
   { to: "/profile", label: "Profile" },
 ];
 

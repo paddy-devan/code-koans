@@ -1,10 +1,26 @@
-import { PlaceholderPage } from "../components/PlaceholderPage";
+import { Link } from "react-router-dom";
+import { vegaKoans } from "../koans/vegaKoans";
 
 export function VegaKoanBrowserPage() {
   return (
-    <PlaceholderPage
-      title="Vega Koan Browser"
-      description="This route will list Vega koans in a later checkpoint. For now it confirms that routing and layout are wired up."
-    />
+    <section className="panel">
+      <p className="eyebrow">Checkpoint 2</p>
+      <h2>Vega Koan Browser</h2>
+      <p>Select a koan to view its current placeholder detail page.</p>
+
+      <ul className="koan-list">
+        {vegaKoans.map((koan) => (
+          <li key={koan.id} className="koan-list-item">
+            <Link to={`/vega/koans/${koan.id}`} className="koan-link">
+              <span className="koan-link-title">{koan.title}</span>
+              <span className="koan-link-meta">
+                {koan.difficulty} · {koan.topic}
+              </span>
+            </Link>
+            <p>{koan.summary}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
