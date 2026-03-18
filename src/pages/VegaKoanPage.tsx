@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { ValidationResultPanel } from "../components/ValidationResultPanel";
 import { VegaChart } from "../components/VegaChart";
+import { clearKoanDraft, getKoanDraft, saveKoanDraft } from "../lib/drafts";
 import { isKoanCompleted, markKoanCompleted } from "../lib/progress";
 import { getVegaKoanById } from "../koans/vegaKoans";
 import type { VegaValidationResult } from "../validation/vegaValidation";
@@ -24,7 +25,8 @@ export function VegaKoanPage() {
       return;
     }
 
-    setSpecText(formatSpec(koan.startingSpec));
+    const savedDraft = getKoanDraft(koan.id);
+    setSpecText(savedDraft ?? formatSpec(koan.startingSpec));
     setValidationResult(null);
     setIsCompleted(isKoanCompleted(koan.id));
   }, [koan]);
@@ -50,7 +52,7 @@ export function VegaKoanPage() {
   if (!koan) {
     return (
       <section className="panel">
-        <p className="eyebrow">Checkpoint 6</p>
+        <p className="eyebrow">Checkpoint 7</p>
         <h2>Koan Not Found</h2>
         <p>No Vega koan exists for the id "{koanId ?? "unknown"}".</p>
         <p>
@@ -64,7 +66,7 @@ export function VegaKoanPage() {
 
   return (
     <section className="panel">
-      <p className="eyebrow">Checkpoint 6</p>
+      <p className="eyebrow">Checkpoint 7</p>
       <h2>{koan.title}</h2>
       <p>{koan.summary}</p>
       <p className="progress-line">
@@ -75,28 +77,44 @@ export function VegaKoanPage() {
       </p>
 
       <div className="chart-grid">
-        <VegaChart dataset={koan.dataset} spec={koan.targetSpec} title="Target Chart" />
+        <section className="chart-stage chart-stage-target">
+          <div className="chart-stage-header">
+            <p className="eyebrow">Reference</p>
+            <p className="chart-stage-copy">Match this output as closely as you can.</p>
+          </div>
+          <VegaChart dataset={koan.dataset} spec={koan.targetSpec} title="Target Chart" />
+        </section>
 
-        {parsedSpec?.spec ? (
-          <VegaChart dataset={koan.dataset} spec={parsedSpec.spec} title="Live Preview" />
-        ) : (
-          <section className="chart-panel">
-            <div className="chart-header">
-              <h3>Live Preview</h3>
-            </div>
-            <div className="chart-frame chart-placeholder">
-              <p>Preview unavailable until the JSON spec parses correctly.</p>
-            </div>
-          </section>
-        )}
+        <section className="chart-stage chart-stage-preview">
+          <div className="chart-stage-header">
+            <p className="eyebrow">Your Work</p>
+            <p className="chart-stage-copy">The preview updates from the current editor draft.</p>
+          </div>
+          {parsedSpec?.spec ? (
+            <VegaChart dataset={koan.dataset} spec={parsedSpec.spec} title="Live Preview" />
+          ) : (
+            <section className="chart-panel">
+              <div className="chart-header">
+                <h3>Live Preview</h3>
+              </div>
+              <div className="chart-frame chart-placeholder">
+                <p>Preview unavailable until the JSON spec parses correctly.</p>
+              </div>
+            </section>
+          )}
+        </section>
       </div>
 
-      <div className="detail-grid">
-        <div>
+      <div className="detail-grid detail-grid-wide">
+        <div className="detail-card">
           <h3>Instructions</h3>
           <p>{koan.instructions}</p>
+          <p className="support-copy">
+            Edit the Vega JSON, compare your preview against the target chart, then submit when
+            the structure looks right.
+          </p>
         </div>
-        <div>
+        <div className="detail-card">
           <h3>Metadata</h3>
           <dl className="meta-list">
             <div>
@@ -118,7 +136,10 @@ export function VegaKoanPage() {
       <section className="editor-panel">
         <div className="editor-header">
           <h3>Editable Spec</h3>
-          <p>Update the Vega JSON below to change the live preview.</p>
+          <p>
+            Update the Vega JSON below to change the live preview. Draft edits are saved in this
+            browser.
+          </p>
         </div>
         <label className="sr-only" htmlFor="vega-spec-editor">
           Vega spec editor
@@ -128,7 +149,9 @@ export function VegaKoanPage() {
           className="spec-editor"
           value={specText}
           onChange={(event) => {
-            setSpecText(event.target.value);
+            const nextText = event.target.value;
+            setSpecText(nextText);
+            saveKoanDraft(koan.id, nextText);
             setValidationResult(null);
           }}
           spellCheck={false}
@@ -159,8 +182,25 @@ export function VegaKoanPage() {
           >
             Submit / Check
           </button>
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={() => {
+              const startingSpecText = formatSpec(koan.startingSpec);
+              clearKoanDraft(koan.id);
+              setSpecText(startingSpecText);
+              setValidationResult(null);
+            }}
+          >
+            Reset To Starting Spec
+          </button>
         </div>
       </section>
+
+      <details className="dataset-panel">
+        <summary>View Dataset</summary>
+        <pre className="dataset-preview">{JSON.stringify(koan.dataset, null, 2)}</pre>
+      </details>
 
       <ValidationResultPanel result={validationResult} />
     </section>

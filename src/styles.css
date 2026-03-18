@@ -140,11 +140,44 @@ a {
   margin-top: 24px;
 }
 
+.detail-grid-wide {
+  align-items: start;
+}
+
+.detail-card {
+  border: 1px solid #d5dce3;
+  padding: 16px;
+}
+
 .chart-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 24px;
   margin-top: 24px;
+}
+
+.chart-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chart-stage-target .chart-panel {
+  border-color: #1f7a4d;
+}
+
+.chart-stage-preview .chart-panel {
+  border-color: #0a5c83;
+}
+
+.chart-stage-header .eyebrow {
+  margin-bottom: 4px;
+}
+
+.chart-stage-copy,
+.support-copy,
+.result-summary {
+  color: #5d6b78;
 }
 
 .chart-panel {
@@ -208,19 +241,33 @@ a {
 }
 
 .editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
   padding: 0 16px 16px;
 }
 
-.primary-button {
+.primary-button,
+.secondary-button {
   padding: 10px 14px;
-  border: 1px solid #13202b;
-  background: #13202b;
-  color: #ffffff;
   font: inherit;
   cursor: pointer;
 }
 
-.primary-button:disabled {
+.primary-button {
+  border: 1px solid #13202b;
+  background: #13202b;
+  color: #ffffff;
+}
+
+.secondary-button {
+  border: 1px solid #d5dce3;
+  background: #ffffff;
+  color: #13202b;
+}
+
+.primary-button:disabled,
+.secondary-button:disabled {
   cursor: not-allowed;
   opacity: 0.5;
 }
@@ -240,6 +287,10 @@ a {
 
 .result-status {
   font-weight: 600;
+}
+
+.result-summary {
+  margin-bottom: 0;
 }
 
 .result-list {
@@ -290,6 +341,24 @@ a {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.dataset-panel {
+  margin-top: 24px;
+  border: 1px solid #d5dce3;
+  padding: 16px;
+}
+
+.dataset-panel summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.dataset-preview {
+  margin: 16px 0 0;
+  overflow-x: auto;
+  font-family: "IBM Plex Mono", "SFMono-Regular", monospace;
+  font-size: 0.9rem;
 }
 
 .sr-only {

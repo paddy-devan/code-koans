@@ -16,12 +16,17 @@ export function ValidationResultPanel({ result }: ValidationResultPanelProps) {
     );
   }
 
+  const passedCount = result.results.filter((item) => item.passed).length;
+
   return (
     <section className="result-panel">
       <div className="result-header">
         <h3>Result</h3>
         <p className={result.passed ? "result-status passed" : "result-status failed"}>
           {result.passed ? "Passed all checks." : "Some checks failed."}
+        </p>
+        <p className="result-summary">
+          {passedCount} of {result.results.length} checks passed on the last submission.
         </p>
       </div>
 
