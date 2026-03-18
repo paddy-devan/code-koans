@@ -19,6 +19,7 @@ export function VegaKoanPage() {
   const [specText, setSpecText] = useState("");
   const [validationResult, setValidationResult] = useState<VegaValidationResult | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
 
   useEffect(() => {
     if (!koan) {
@@ -52,7 +53,7 @@ export function VegaKoanPage() {
   if (!koan) {
     return (
       <section className="panel">
-        <p className="eyebrow">Checkpoint 7</p>
+        <p className="eyebrow">Checkpoint 8</p>
         <h2>Koan Not Found</h2>
         <p>No Vega koan exists for the id "{koanId ?? "unknown"}".</p>
         <p>
@@ -66,7 +67,7 @@ export function VegaKoanPage() {
 
   return (
     <section className="panel">
-      <p className="eyebrow">Checkpoint 7</p>
+      <p className="eyebrow">Checkpoint 8</p>
       <h2>{koan.title}</h2>
       <p>{koan.summary}</p>
       <p className="progress-line">
@@ -170,17 +171,21 @@ export function VegaKoanPage() {
                 return;
               }
 
-              const nextValidationResult = validateVegaSpec(koan, parsedSpec.spec);
-              setValidationResult(nextValidationResult);
+              setIsChecking(true);
 
-              if (nextValidationResult.passed) {
-                markKoanCompleted(koan.id);
-                setIsCompleted(true);
-              }
+              void validateVegaSpec(koan, parsedSpec.spec).then((nextValidationResult) => {
+                setValidationResult(nextValidationResult);
+                setIsChecking(false);
+
+                if (nextValidationResult.passed) {
+                  markKoanCompleted(koan.id);
+                  setIsCompleted(true);
+                }
+              });
             }}
-            disabled={!parsedSpec?.spec}
+            disabled={!parsedSpec?.spec || isChecking}
           >
-            Submit / Check
+            {isChecking ? "Checking..." : "Submit / Check"}
           </button>
           <button
             type="button"
@@ -191,6 +196,7 @@ export function VegaKoanPage() {
               setSpecText(startingSpecText);
               setValidationResult(null);
             }}
+            disabled={isChecking}
           >
             Reset To Starting Spec
           </button>

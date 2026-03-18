@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import embed from "vega-embed";
+import { buildRuntimeVegaSpec } from "../lib/vegaSpec";
 import type { VegaDatum } from "../koans/types";
 
 type VegaChartProps = {
@@ -7,18 +8,6 @@ type VegaChartProps = {
   spec: Record<string, unknown>;
   title: string;
 };
-
-function buildChartSpec(spec: Record<string, unknown>, dataset: VegaDatum[]) {
-  return {
-    ...spec,
-    data: [
-      {
-        name: "table",
-        values: dataset,
-      },
-    ],
-  };
-}
 
 export function VegaChart({ dataset, spec, title }: VegaChartProps) {
   const chartRef = useRef<HTMLDivElement | null>(null);
@@ -39,7 +28,7 @@ export function VegaChart({ dataset, spec, title }: VegaChartProps) {
       target.innerHTML = "";
 
       try {
-        const result = await embed(target, buildChartSpec(spec, dataset), {
+        const result = await embed(target, buildRuntimeVegaSpec(spec, dataset), {
           actions: false,
           renderer: "svg",
         });

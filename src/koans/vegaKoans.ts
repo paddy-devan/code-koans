@@ -84,14 +84,19 @@ export const vegaKoans: VegaKoan[] = [
     },
     checks: [
       {
-        type: "marks-min-count",
-        expected: 1,
-        message: "Add at least one mark to render the bars.",
+        type: "rendered-mark-count",
+        expected: 3,
+        message: "Render three bar marks for the three categories in the dataset.",
       },
       {
-        type: "first-mark-type",
+        type: "rendered-mark-type",
         expected: "rect",
-        message: "Use a rect mark for the bar chart.",
+        message: "Render rect marks in the final chart output.",
+      },
+      {
+        type: "rendered-x-domain",
+        expected: ["A", "B", "C"],
+        message: "Preserve the expected category order in the rendered x-scale domain.",
       },
     ],
   },

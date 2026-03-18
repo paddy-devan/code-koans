@@ -27,6 +27,21 @@ export type VegaKoanCheck =
       type: "has-scale";
       expected: string;
       message: string;
+    }
+  | {
+      type: "rendered-mark-count";
+      expected: number;
+      message: string;
+    }
+  | {
+      type: "rendered-mark-type";
+      expected: string;
+      message: string;
+    }
+  | {
+      type: "rendered-x-domain";
+      expected: Array<string | number>;
+      message: string;
     };
 
 export type VegaKoan = {
