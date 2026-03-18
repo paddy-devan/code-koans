@@ -72,7 +72,7 @@ Introduce a simple in-repo koan data structure for Vega.
 # Checkpoint 3 — Target chart rendering
 
 ## Goal
-Render the target Vega/Vega-Lite chart for each koan.
+Render the target Vega chart for each koan.
 
 ## Deliverables
 - chart rendering component
@@ -96,7 +96,7 @@ Render the target Vega/Vega-Lite chart for each koan.
 # Checkpoint 4 — Interactive editor with live preview
 
 ## Goal
-Allow the user to edit a Vega/Vega-Lite spec and see a live preview.
+Allow the user to edit a Vega spec and see a live preview.
 
 ## Deliverables
 - editor component
@@ -222,17 +222,18 @@ Begin replacing spec-based validation with deterministic output-oriented validat
 # Checkpoint 9 — Worker-backed persistence
 
 ## Goal
-Introduce minimal backend persistence using Cloudflare Workers.
+Introduce minimal backend persistence using Cloudflare Workers, making the Worker the canonical source of persisted progress once available.
 
 ## Deliverables
 - Worker API endpoints
-- store/load progress
+- store/load progress with the Worker as the primary persisted record
 - store submission attempts
+- local storage retained as fallback/cache behavior
 - local development instructions
 
 ## Acceptance criteria
 - app still runs locally
-- progress can be persisted through Worker endpoints
+- progress can be persisted through Worker endpoints and read back as the canonical stored state
 - architecture stays simple
 
 ## Not in scope

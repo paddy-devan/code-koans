@@ -2,7 +2,9 @@
 
 Code Koans is a task-based learning website for niche technical tools and languages.
 
-The initial focus is **Vega koans**: small, discovery-based exercises designed to help users build an intuitive understanding of Vega/Vega-Lite by solving tasks of increasing difficulty.
+The initial focus is **Vega koans**: small, discovery-based exercises designed to help users build an intuitive understanding of Vega by solving tasks of increasing difficulty.
+
+The first implementation is Vega only. If Vega-Lite is added later, it should be introduced as a separate track rather than bundled into the initial Vega work.
 
 The broader long-term vision is a multi-track site with sections such as:
 
@@ -29,6 +31,8 @@ Current focus:
 - live Vega editing and preview
 - simple validation
 - progress tracking
+
+When Worker-backed persistence is added later, it should become the canonical source of progress data, with browser local storage retained as fallback/cache behavior.
 
 ## Design principles
 

@@ -89,11 +89,11 @@ This project is intentionally meant to remain understandable to a developer lear
 - profile page
 - static koan definitions in-repo
 - target chart rendering
-- editable Vega/Vega-Lite spec
+- editable Vega spec
 - live preview
 - simple submit/check flow
 - local progress tracking at first
-- later: Worker-backed persistence
+- later: Worker-backed persistence as the canonical store, with local storage as fallback/cache
 
 ### Out of scope for now
 - Regex implementation
@@ -134,6 +134,8 @@ A Vega koan page should eventually include:
 - optional dataset display
 - reset option
 
+The initial implementation should support Vega specs only. If Vega-Lite is added later, it should be introduced as a separate track rather than bundled into the first Vega checkpoints.
+
 At early checkpoints, some of these can be placeholders.
 
 ---
@@ -164,7 +166,7 @@ Initially:
 
 Progress tracking:
 - local/browser-based first
-- persistent storage later
+- persistent storage later, with Worker-backed storage becoming canonical when introduced
 
 ---
 
