@@ -16,7 +16,32 @@ export const vegaKoans: VegaKoan[] = [
       { category: "B", value: 8 },
       { category: "C", value: 3 },
     ],
-    startingSpec: {},
+    startingSpec: {
+      $schema: "https://vega.github.io/schema/vega/v5.json",
+      width: 320,
+      height: 200,
+      padding: 8,
+      scales: [
+        {
+          name: "xscale",
+          type: "band",
+          domain: { data: "table", field: "category" },
+          range: "width",
+          padding: 0.15,
+        },
+        {
+          name: "yscale",
+          domain: { data: "table", field: "value" },
+          nice: true,
+          range: "height",
+        },
+      ],
+      axes: [
+        { orient: "bottom", scale: "xscale" },
+        { orient: "left", scale: "yscale" },
+      ],
+      marks: [],
+    },
     targetSpec: {
       $schema: "https://vega.github.io/schema/vega/v5.json",
       width: 320,
@@ -73,7 +98,46 @@ export const vegaKoans: VegaKoan[] = [
       { category: "South", value: 6 },
       { category: "West", value: 9 },
     ],
-    startingSpec: {},
+    startingSpec: {
+      $schema: "https://vega.github.io/schema/vega/v5.json",
+      width: 320,
+      height: 200,
+      padding: 8,
+      scales: [
+        {
+          name: "xscale",
+          type: "band",
+          domain: { data: "table", field: "category" },
+          range: "width",
+          padding: 0.15,
+        },
+        {
+          name: "yscale",
+          domain: { data: "table", field: "value" },
+          nice: true,
+          range: "height",
+        },
+      ],
+      axes: [
+        { orient: "bottom", scale: "xscale" },
+        { orient: "left", scale: "yscale" },
+      ],
+      marks: [
+        {
+          type: "rect",
+          from: { data: "table" },
+          encode: {
+            enter: {
+              x: { scale: "xscale", field: "category" },
+              width: { scale: "xscale", band: 1 },
+              y: { scale: "yscale", field: "value" },
+              y2: { scale: "yscale", value: 0 },
+              fill: { value: "#1f7a4d" },
+            },
+          },
+        },
+      ],
+    },
     targetSpec: {
       $schema: "https://vega.github.io/schema/vega/v5.json",
       width: 320,
@@ -137,7 +201,46 @@ export const vegaKoans: VegaKoan[] = [
       { category: "Beta", value: 7 },
       { category: "Gamma", value: 10 },
     ],
-    startingSpec: {},
+    startingSpec: {
+      $schema: "https://vega.github.io/schema/vega/v5.json",
+      width: 320,
+      height: 200,
+      padding: 8,
+      scales: [
+        {
+          name: "xscale",
+          type: "band",
+          domain: { data: "table", field: "category" },
+          range: "width",
+          padding: 0.15,
+        },
+        {
+          name: "yscale",
+          domain: { data: "table", field: "value" },
+          nice: true,
+          range: "height",
+        },
+      ],
+      axes: [
+        { orient: "bottom", scale: "xscale" },
+        { orient: "left", scale: "yscale" },
+      ],
+      marks: [
+        {
+          type: "rect",
+          from: { data: "table" },
+          encode: {
+            enter: {
+              x: { scale: "xscale", field: "category" },
+              width: { scale: "xscale", band: 1 },
+              y: { scale: "yscale", field: "value" },
+              y2: { scale: "yscale", value: 0 },
+              fill: { value: "#0a5c83" },
+            },
+          },
+        },
+      ],
+    },
     targetSpec: {
       $schema: "https://vega.github.io/schema/vega/v5.json",
       width: 320,
