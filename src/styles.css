@@ -1,0 +1,93 @@
+:root {
+  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #13202b;
+  background: #f3f5f7;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app-shell {
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.site-header,
+.panel {
+  max-width: 960px;
+  margin: 0 auto;
+  background: #ffffff;
+  border: 1px solid #d5dce3;
+}
+
+.site-header {
+  padding: 24px;
+}
+
+.site-title,
+.panel h2 {
+  margin: 0;
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  font-weight: 600;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5d6b78;
+}
+
+.nav-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav-link {
+  display: inline-block;
+  padding: 8px 12px;
+  border: 1px solid #d5dce3;
+  text-decoration: none;
+}
+
+.nav-link.active {
+  border-color: #13202b;
+  background: #13202b;
+  color: #ffffff;
+}
+
+.page-shell {
+  padding: 24px 0 0;
+}
+
+.panel {
+  padding: 24px;
+}
+
+.panel p:last-child {
+  margin-bottom: 0;
+}

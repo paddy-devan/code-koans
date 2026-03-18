@@ -73,20 +73,20 @@ The exact type may evolve, but koans should remain plain and explicit.
 Early koans may use placeholder checks based on spec structure.
 
 Examples:
-	•	mark type is bar
-	•	x encoding uses category
-	•	y encoding uses value
+- mark type is bar
+- x encoding uses category
+- y encoding uses value
 
 ### Long-term direction
 
 The intended long-term approach is output-based validation.
 
 Examples:
-	•	expected mark count
-	•	expected grouping
-	•	expected sort order
-	•	expected categories and values
-	•	expected rendered structure
+- expected mark count
+- expected grouping
+- expected sort order
+- expected categories and values
+- expected rendered structure
 
 Koan definitions should therefore keep validation concerns separate from UI concerns.
 
@@ -128,19 +128,21 @@ This is illustrative only.
 ## Authoring guidance
 
 When adding a new koan:
-	1.	Decide the single main concept it teaches.
-	2.	Choose a dataset that exposes common mistakes.
-	3.	Define the target chart clearly.
-	4.	Define the starting spec.
-	5.	Add checks appropriate to the current validation stage.
-	6.	Keep instructions concise.
-	7.	Avoid adding multiple new concepts in one beginner koan.
+1. Decide the single main concept it teaches.
+2. Choose a dataset that exposes common mistakes.
+3. Define the target chart clearly.
+4. Define the starting spec.
+5. Add checks appropriate to the current validation stage.
+6. Keep instructions concise.
+7. Avoid adding multiple new concepts in one beginner koan.
 
 ## Future expansion
 
 Later, this directory may include additional track-specific folders such as:
 
+```text
 src/koans/vega/
 src/koans/regex/
+```
 
 The project should remain capable of supporting multiple tracks, but only Vega should be implemented initially.
