@@ -7,6 +7,7 @@ import { ProfilePage } from "./pages/ProfilePage";
 import { VegaKoanBrowserPage } from "./pages/VegaKoanBrowserPage";
 import { VegaKoanPage } from "./pages/VegaKoanPage";
 import { VegaLandingPage } from "./pages/VegaLandingPage";
+import { getTrackKoansPath, getTrackKoanPath, getTrackPath } from "./tracks";
 import "./styles.css";
 
 const router = createBrowserRouter([
@@ -19,15 +20,15 @@ const router = createBrowserRouter([
         element: <HomePage />,
       },
       {
-        path: "vega",
+        path: getTrackPath("vega").slice(1),
         element: <VegaLandingPage />,
       },
       {
-        path: "vega/koans",
+        path: getTrackKoansPath("vega").slice(1),
         element: <VegaKoanBrowserPage />,
       },
       {
-        path: "vega/koans/:koanId",
+        path: getTrackKoanPath("vega", ":koanId").slice(1),
         element: <VegaKoanPage />,
       },
       {

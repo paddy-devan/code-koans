@@ -3,6 +3,7 @@ import type { VegaKoan } from "./types";
 export const vegaKoans: VegaKoan[] = [
   {
     id: "bar-chart-basics",
+    track: "vega",
     slug: "bar-chart-basics",
     title: "Bar Chart Basics",
     summary: "Build a simple bar chart from categorical data.",
@@ -102,6 +103,7 @@ export const vegaKoans: VegaKoan[] = [
   },
   {
     id: "sort-bars-descending",
+    track: "vega",
     slug: "sort-bars-descending",
     title: "Sort Bars Descending",
     summary: "Order bars from largest value to smallest value.",
@@ -222,6 +224,7 @@ export const vegaKoans: VegaKoan[] = [
   },
   {
     id: "color-by-category",
+    track: "vega",
     slug: "color-by-category",
     title: "Color by Category",
     summary: "Use color to differentiate categorical groups.",

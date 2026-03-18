@@ -92,6 +92,22 @@ a {
   margin-bottom: 0;
 }
 
+.track-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.track-card {
+  border: 1px solid #d5dce3;
+  padding: 16px;
+}
+
+.track-card h3 {
+  margin-top: 0;
+}
+
 .koan-list {
   margin: 24px 0 0;
   padding: 0;

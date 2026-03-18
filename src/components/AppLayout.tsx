@@ -1,10 +1,11 @@
 import { NavLink, Outlet } from "react-router-dom";
+import { getTrackKoanPath, getTrackKoansPath, getTrackPath } from "../tracks";
 
 const navItems = [
   { to: "/", label: "Home", end: true },
-  { to: "/vega", label: "Vega" },
-  { to: "/vega/koans", label: "Koans" },
-  { to: "/vega/koans/bar-chart-basics", label: "Koan Page" },
+  { to: getTrackPath("vega"), label: "Vega" },
+  { to: getTrackKoansPath("vega"), label: "Koans" },
+  { to: getTrackKoanPath("vega", "bar-chart-basics"), label: "Koan Page" },
   { to: "/profile", label: "Profile" },
 ];
 

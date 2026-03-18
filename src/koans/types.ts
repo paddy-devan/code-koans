@@ -1,3 +1,5 @@
+import type { TrackId } from "../tracks";
+
 export type VegaKoanDifficulty = "beginner" | "intermediate" | "advanced";
 
 export type VegaDatum = Record<string, string | number>;
@@ -46,6 +48,7 @@ export type VegaKoanCheck =
 
 export type VegaKoan = {
   id: string;
+  track: Extract<TrackId, "vega">;
   slug: string;
   title: string;
   summary: string;
