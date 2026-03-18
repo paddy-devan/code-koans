@@ -133,6 +133,31 @@ a {
   margin-top: 24px;
 }
 
+.chart-panel {
+  margin-top: 24px;
+  border: 1px solid #d5dce3;
+}
+
+.chart-header {
+  padding: 16px 16px 0;
+}
+
+.chart-header h3 {
+  margin: 0;
+}
+
+.chart-frame {
+  min-height: 260px;
+  padding: 16px;
+  overflow-x: auto;
+}
+
+.chart-error {
+  margin: 0;
+  padding: 0 16px 16px;
+  color: #b42318;
+}
+
 .detail-grid h3 {
   margin-top: 0;
 }

@@ -1,5 +1,7 @@
 export type VegaKoanDifficulty = "beginner" | "intermediate" | "advanced";
 
+export type VegaDatum = Record<string, string | number>;
+
 export type VegaKoan = {
   id: string;
   slug: string;
@@ -9,7 +11,7 @@ export type VegaKoan = {
   difficulty: VegaKoanDifficulty;
   topic: string;
   order: number;
-  dataset: unknown;
+  dataset: VegaDatum[];
   startingSpec: Record<string, unknown>;
   targetSpec: Record<string, unknown>;
 };

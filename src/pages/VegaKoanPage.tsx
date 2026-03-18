@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { VegaChart } from "../components/VegaChart";
 import { getVegaKoanById } from "../koans/vegaKoans";
 
 export function VegaKoanPage() {
@@ -9,7 +10,7 @@ export function VegaKoanPage() {
   if (!koan) {
     return (
       <section className="panel">
-        <p className="eyebrow">Checkpoint 2</p>
+        <p className="eyebrow">Checkpoint 3</p>
         <h2>Koan Not Found</h2>
         <p>No Vega koan exists for the id "{koanId ?? "unknown"}".</p>
         <p>
@@ -23,9 +24,11 @@ export function VegaKoanPage() {
 
   return (
     <section className="panel">
-      <p className="eyebrow">Checkpoint 2</p>
+      <p className="eyebrow">Checkpoint 3</p>
       <h2>{koan.title}</h2>
       <p>{koan.summary}</p>
+
+      <VegaChart dataset={koan.dataset} spec={koan.targetSpec} title="Target Chart" />
 
       <div className="detail-grid">
         <div>
