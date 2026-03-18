@@ -2,6 +2,33 @@ export type VegaKoanDifficulty = "beginner" | "intermediate" | "advanced";
 
 export type VegaDatum = Record<string, string | number>;
 
+export type VegaKoanCheck =
+  | {
+      type: "marks-min-count";
+      expected: number;
+      message: string;
+    }
+  | {
+      type: "first-mark-type";
+      expected: string;
+      message: string;
+    }
+  | {
+      type: "first-mark-fill";
+      expected: string;
+      message: string;
+    }
+  | {
+      type: "x-domain-sort-order";
+      expected: "ascending" | "descending";
+      message: string;
+    }
+  | {
+      type: "has-scale";
+      expected: string;
+      message: string;
+    };
+
 export type VegaKoan = {
   id: string;
   slug: string;
@@ -14,4 +41,5 @@ export type VegaKoan = {
   dataset: VegaDatum[];
   startingSpec: Record<string, unknown>;
   targetSpec: Record<string, unknown>;
+  checks: VegaKoanCheck[];
 };

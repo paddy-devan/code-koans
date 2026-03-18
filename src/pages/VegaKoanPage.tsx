@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import { ValidationResultPanel } from "../components/ValidationResultPanel";
 import { VegaChart } from "../components/VegaChart";
 import { getVegaKoanById } from "../koans/vegaKoans";
+import type { VegaValidationResult } from "../validation/vegaValidation";
+import { validateVegaSpec } from "../validation/vegaValidation";
 
 function formatSpec(spec: Record<string, unknown>) {
   return JSON.stringify(spec, null, 2);
@@ -12,6 +15,7 @@ export function VegaKoanPage() {
   const { koanId } = useParams();
   const koan = koanId ? getVegaKoanById(koanId) : undefined;
   const [specText, setSpecText] = useState("");
+  const [validationResult, setValidationResult] = useState<VegaValidationResult | null>(null);
 
   useEffect(() => {
     if (!koan) {
@@ -19,6 +23,7 @@ export function VegaKoanPage() {
     }
 
     setSpecText(formatSpec(koan.startingSpec));
+    setValidationResult(null);
   }, [koan]);
 
   const parsedSpec = useMemo(() => {
@@ -56,7 +61,7 @@ export function VegaKoanPage() {
 
   return (
     <section className="panel">
-      <p className="eyebrow">Checkpoint 4</p>
+      <p className="eyebrow">Checkpoint 5</p>
       <h2>{koan.title}</h2>
       <p>{koan.summary}</p>
 
@@ -113,7 +118,10 @@ export function VegaKoanPage() {
           id="vega-spec-editor"
           className="spec-editor"
           value={specText}
-          onChange={(event) => setSpecText(event.target.value)}
+          onChange={(event) => {
+            setSpecText(event.target.value);
+            setValidationResult(null);
+          }}
           spellCheck={false}
         />
         {parsedSpec?.error ? (
@@ -121,7 +129,25 @@ export function VegaKoanPage() {
             JSON error: {parsedSpec.error}
           </p>
         ) : null}
+        <div className="editor-actions">
+          <button
+            type="button"
+            className="primary-button"
+            onClick={() => {
+              if (!parsedSpec?.spec) {
+                return;
+              }
+
+              setValidationResult(validateVegaSpec(koan, parsedSpec.spec));
+            }}
+            disabled={!parsedSpec?.spec}
+          >
+            Submit / Check
+          </button>
+        </div>
       </section>
+
+      <ValidationResultPanel result={validationResult} />
     </section>
   );
 }

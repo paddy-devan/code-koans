@@ -82,6 +82,18 @@ export const vegaKoans: VegaKoan[] = [
         },
       ],
     },
+    checks: [
+      {
+        type: "marks-min-count",
+        expected: 1,
+        message: "Add at least one mark to render the bars.",
+      },
+      {
+        type: "first-mark-type",
+        expected: "rect",
+        message: "Use a rect mark for the bar chart.",
+      },
+    ],
   },
   {
     id: "sort-bars-descending",
@@ -185,6 +197,23 @@ export const vegaKoans: VegaKoan[] = [
         },
       ],
     },
+    checks: [
+      {
+        type: "marks-min-count",
+        expected: 1,
+        message: "Keep a mark in place so the chart still renders.",
+      },
+      {
+        type: "first-mark-type",
+        expected: "rect",
+        message: "Use a rect mark for the bar chart.",
+      },
+      {
+        type: "x-domain-sort-order",
+        expected: "descending",
+        message: "Sort the x-scale domain by value in descending order.",
+      },
+    ],
   },
   {
     id: "color-by-category",
@@ -287,6 +316,23 @@ export const vegaKoans: VegaKoan[] = [
         },
       ],
     },
+    checks: [
+      {
+        type: "marks-min-count",
+        expected: 1,
+        message: "Keep a mark in place so the chart still renders.",
+      },
+      {
+        type: "first-mark-type",
+        expected: "rect",
+        message: "Use a rect mark for the bar chart.",
+      },
+      {
+        type: "has-scale",
+        expected: "color",
+        message: "Add a color scale for category-based coloring.",
+      },
+    ],
   },
 ];
 
