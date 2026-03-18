@@ -54,12 +54,35 @@ When Worker-backed persistence is added later, it should become the canonical so
 
 ## Running locally
 
-This section should be updated once the app is scaffolded. A likely workflow is:
+Frontend only:
 
 ```bash
 npm install
 npm run dev
 ```
+
+With local Worker and local D1:
+
+1. Create a D1 database in Cloudflare and replace the placeholder `database_id` in `wrangler.jsonc`.
+2. Apply the local migration:
+
+```bash
+npm run d1:migrate:local
+```
+
+3. Start the Worker locally:
+
+```bash
+npm run dev:worker
+```
+
+4. In a second terminal, start the frontend and point it at the local Worker:
+
+```bash
+VITE_API_BASE_URL=http://127.0.0.1:8787 npm run dev
+```
+
+If the Worker is not running, the app still falls back to browser local storage for progress caching so the frontend remains usable during development.
 
 ## Project structure
 

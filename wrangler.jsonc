@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "code-koans",
+  "main": "workers/index.ts",
+  "compatibility_date": "2026-03-18",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "code-koans",
+      "database_id": "replace-with-your-d1-database-id"
+    }
+  ]
+}

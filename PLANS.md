@@ -228,17 +228,22 @@ Introduce minimal backend persistence using Cloudflare Workers, making the Worke
 
 ## Deliverables
 - Worker API endpoints
+- Cloudflare D1-backed store for progress and submission attempts
 - store/load progress with the Worker as the primary persisted record
 - store submission attempts
+- frontend persistence layer or service boundary so UI code does not directly manage separate local and Worker persistence paths
 - local storage retained as fallback/cache behavior
-- local development instructions
+- local development instructions using local Worker/D1 development rather than requiring deployed remote infrastructure
 
 ## Acceptance criteria
 - app still runs locally
+- app can be run and exercised locally with a local Worker/D1 setup
 - progress can be persisted through Worker endpoints and read back as the canonical stored state
+- the UI does not duplicate persistence logic across separate local-only and Worker-specific codepaths
 - architecture stays simple
 
 ## Not in scope
+- backend draft-spec persistence
 - full auth system
 - analytics platform
 - production hardening

@@ -1,20 +1,22 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getCompletedKoanIds } from "../lib/progress";
+import { loadProgress } from "../lib/persistence";
 import { vegaKoans } from "../koans/vegaKoans";
 
 export function VegaKoanBrowserPage() {
   const [completedKoanIds, setCompletedKoanIds] = useState<string[]>([]);
 
   useEffect(() => {
-    setCompletedKoanIds(getCompletedKoanIds());
+    void loadProgress().then((snapshot) => {
+      setCompletedKoanIds(snapshot.completedKoanIds);
+    });
   }, []);
 
   return (
     <section className="panel">
-      <p className="eyebrow">Checkpoint 6</p>
+      <p className="eyebrow">Checkpoint 9</p>
       <h2>Vega Koan Browser</h2>
-      <p>Select a koan and track completion locally in this browser.</p>
+      <p>Select a koan and track completion through the persistence layer.</p>
 
       <ul className="koan-list">
         {vegaKoans.map((koan) => (

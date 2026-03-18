@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 import { ValidationResultPanel } from "../components/ValidationResultPanel";
 import { VegaChart } from "../components/VegaChart";
 import { clearKoanDraft, getKoanDraft, saveKoanDraft } from "../lib/drafts";
-import { isKoanCompleted, markKoanCompleted } from "../lib/progress";
+import { getCachedProgress, loadProgress, recordSubmissionAttempt } from "../lib/persistence";
 import { getVegaKoanById } from "../koans/vegaKoans";
 import type { VegaValidationResult } from "../validation/vegaValidation";
 import { validateVegaSpec } from "../validation/vegaValidation";
@@ -29,7 +29,11 @@ export function VegaKoanPage() {
     const savedDraft = getKoanDraft(koan.id);
     setSpecText(savedDraft ?? formatSpec(koan.startingSpec));
     setValidationResult(null);
-    setIsCompleted(isKoanCompleted(koan.id));
+    setIsCompleted(getCachedProgress().completedKoanIds.includes(koan.id));
+
+    void loadProgress().then((snapshot) => {
+      setIsCompleted(snapshot.completedKoanIds.includes(koan.id));
+    });
   }, [koan]);
 
   const parsedSpec = useMemo(() => {
@@ -53,7 +57,7 @@ export function VegaKoanPage() {
   if (!koan) {
     return (
       <section className="panel">
-        <p className="eyebrow">Checkpoint 8</p>
+        <p className="eyebrow">Checkpoint 9</p>
         <h2>Koan Not Found</h2>
         <p>No Vega koan exists for the id "{koanId ?? "unknown"}".</p>
         <p>
@@ -67,7 +71,7 @@ export function VegaKoanPage() {
 
   return (
     <section className="panel">
-      <p className="eyebrow">Checkpoint 8</p>
+      <p className="eyebrow">Checkpoint 9</p>
       <h2>{koan.title}</h2>
       <p>{koan.summary}</p>
       <p className="progress-line">
@@ -175,12 +179,13 @@ export function VegaKoanPage() {
 
               void validateVegaSpec(koan, parsedSpec.spec).then((nextValidationResult) => {
                 setValidationResult(nextValidationResult);
-                setIsChecking(false);
-
-                if (nextValidationResult.passed) {
-                  markKoanCompleted(koan.id);
-                  setIsCompleted(true);
-                }
+                void recordSubmissionAttempt({
+                  koanId: koan.id,
+                  passed: nextValidationResult.passed,
+                }).then((snapshot) => {
+                  setIsCompleted(snapshot.completedKoanIds.includes(koan.id));
+                  setIsChecking(false);
+                });
               });
             }}
             disabled={!parsedSpec?.spec || isChecking}
