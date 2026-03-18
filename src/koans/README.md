@@ -24,12 +24,13 @@ For Vega koans, the learner should primarily work by:
 - experimenting with the spec
 - iterating until the desired result is produced
 
-## Initial Vega koan structure
+## Current Vega koan schema
 
-A Vega koan should include, at minimum:
+The current runtime shape is defined in `src/koans/types.ts`.
+
+A Vega koan currently includes:
 
 - `id`
-- `tool`
 - `slug`
 - `title`
 - `summary`
@@ -41,100 +42,243 @@ A Vega koan should include, at minimum:
 - `startingSpec`
 - `targetSpec`
 - `checks`
-- `completionCriteriaText`
 
-A TypeScript type similar to the following is expected:
+The current TypeScript shape is:
 
 ```ts
+export type VegaKoanDifficulty = "beginner" | "intermediate" | "advanced";
+
+export type VegaDatum = Record<string, string | number>;
+
+export type VegaKoanCheck =
+  | {
+      type: "marks-min-count";
+      expected: number;
+      message: string;
+    }
+  | {
+      type: "first-mark-type";
+      expected: string;
+      message: string;
+    }
+  | {
+      type: "first-mark-fill";
+      expected: string;
+      message: string;
+    }
+  | {
+      type: "x-domain-sort-order";
+      expected: "ascending" | "descending";
+      message: string;
+    }
+  | {
+      type: "has-scale";
+      expected: string;
+      message: string;
+    }
+  | {
+      type: "rendered-mark-count";
+      expected: number;
+      message: string;
+    }
+  | {
+      type: "rendered-mark-type";
+      expected: string;
+      message: string;
+    }
+  | {
+      type: "rendered-x-domain";
+      expected: Array<string | number>;
+      message: string;
+    };
+
 export type VegaKoan = {
-  id: string
-  tool: "vega"
-  slug: string
-  title: string
-  summary: string
-  instructions: string
-  difficulty: "beginner" | "intermediate" | "advanced"
-  topic: string
-  order: number
-  dataset: unknown
-  startingSpec: object
-  targetSpec: object
-  checks: VegaKoanCheck[]
-  completionCriteriaText?: string[]
-}
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  instructions: string;
+  difficulty: VegaKoanDifficulty;
+  topic: string;
+  order: number;
+  dataset: VegaDatum[];
+  startingSpec: Record<string, unknown>;
+  targetSpec: Record<string, unknown>;
+  checks: VegaKoanCheck[];
+};
 ```
 
-The exact type may evolve, but koans should remain plain and explicit.
+Keep koan definitions plain and explicit. Avoid helper abstractions that make a single koan harder to read in isolation.
 
-## Validation philosophy
+## Validation rules
 
-### Early implementation
+The project currently supports two classes of validation:
 
-Early koans may use placeholder checks based on spec structure.
+### Spec-shape checks
 
-Examples:
-- mark type is bar
-- x encoding uses category
-- y encoding uses value
+These inspect the submitted Vega JSON directly.
 
-### Long-term direction
+Available checks:
+- `marks-min-count`
+- `first-mark-type`
+- `first-mark-fill`
+- `x-domain-sort-order`
+- `has-scale`
 
-The intended long-term approach is output-based validation.
+These are useful when a koan is still in a simpler placeholder-validation phase.
 
-Examples:
-- expected mark count
-- expected grouping
-- expected sort order
-- expected categories and values
-- expected rendered structure
+### Rendered-output checks
 
-Koan definitions should therefore keep validation concerns separate from UI concerns.
+These render the submitted Vega spec and inspect the deterministic output.
 
-## Example authoring shape
+Available checks:
+- `rendered-mark-count`
+- `rendered-mark-type`
+- `rendered-x-domain`
 
-An example koan object might look like this:
+Prefer these when the intended behavior can be expressed by the actual rendered result rather than by one exact code shape.
+
+Validation should stay understandable. Do not add broad or fuzzy “equivalence” logic inside a single koan definition.
+
+## Clear example koan
+
+`bar-chart-basics` in `src/koans/vegaKoans.ts` is the clearest current example because it uses:
+- a small explicit dataset
+- a simple starting spec
+- a complete target spec
+- rendered-output validation
+
+A copyable example in the current style:
 
 ```ts
-export const basicBarKoan = {
-  id: "vega-basic-bar-1",
-  tool: "vega",
-  slug: "basic-bar-chart",
-  title: "Basic bar chart",
-  summary: "Create a simple bar chart from the provided data.",
-  instructions: "Replicate the target chart using the provided dataset.",
+export const basicBarKoan: VegaKoan = {
+  id: "bar-chart-basics",
+  slug: "bar-chart-basics",
+  title: "Bar Chart Basics",
+  summary: "Build a simple bar chart from categorical data.",
+  instructions:
+    "Use the provided dataset to produce a bar chart with category labels along the horizontal axis and values encoded as bar height.",
   difficulty: "beginner",
-  topic: "marks-and-encoding",
+  topic: "marks",
   order: 1,
   dataset: [
-    { category: "A", value: 10 },
-    { category: "B", value: 20 },
-    { category: "C", value: 30 }
+    { category: "A", value: 5 },
+    { category: "B", value: 8 },
+    { category: "C", value: 3 }
   ],
-  startingSpec: {},
-  targetSpec: {},
+  startingSpec: {
+    $schema: "https://vega.github.io/schema/vega/v5.json",
+    width: 320,
+    height: 200,
+    padding: 8,
+    scales: [
+      {
+        name: "xscale",
+        type: "band",
+        domain: { data: "table", field: "category" },
+        range: "width",
+        padding: 0.15
+      },
+      {
+        name: "yscale",
+        domain: { data: "table", field: "value" },
+        nice: true,
+        range: "height"
+      }
+    ],
+    axes: [
+      { orient: "bottom", scale: "xscale" },
+      { orient: "left", scale: "yscale" }
+    ],
+    marks: []
+  },
+  targetSpec: {
+    $schema: "https://vega.github.io/schema/vega/v5.json",
+    width: 320,
+    height: 200,
+    padding: 8,
+    scales: [
+      {
+        name: "xscale",
+        type: "band",
+        domain: { data: "table", field: "category" },
+        range: "width",
+        padding: 0.15
+      },
+      {
+        name: "yscale",
+        domain: { data: "table", field: "value" },
+        nice: true,
+        range: "height"
+      }
+    ],
+    axes: [
+      { orient: "bottom", scale: "xscale" },
+      { orient: "left", scale: "yscale" }
+    ],
+    marks: [
+      {
+        type: "rect",
+        from: { data: "table" },
+        encode: {
+          enter: {
+            x: { scale: "xscale", field: "category" },
+            width: { scale: "xscale", band: 1 },
+            y: { scale: "yscale", field: "value" },
+            y2: { scale: "yscale", value: 0 },
+            fill: { value: "#0a5c83" }
+          }
+        }
+      }
+    ]
+  },
   checks: [
-    { type: "spec-field-equals", path: "mark", expected: "bar" }
-  ],
-  completionCriteriaText: [
-    "Use bar marks",
-    "Map category to x",
-    "Map value to y"
+    {
+      type: "rendered-mark-count",
+      expected: 3,
+      message: "Render three bar marks for the three categories in the dataset."
+    },
+    {
+      type: "rendered-mark-type",
+      expected: "rect",
+      message: "Render rect marks in the final chart output."
+    },
+    {
+      type: "rendered-x-domain",
+      expected: ["A", "B", "C"],
+      message: "Preserve the expected category order in the rendered x-scale domain."
+    }
   ]
-}
+};
 ```
 
-This is illustrative only.
-
-## Authoring guidance
+## Process for adding a new koan
 
 When adding a new koan:
 1. Decide the single main concept it teaches.
 2. Choose a dataset that exposes common mistakes.
-3. Define the target chart clearly.
-4. Define the starting spec.
-5. Add checks appropriate to the current validation stage.
-6. Keep instructions concise.
-7. Avoid adding multiple new concepts in one beginner koan.
+3. Pick an `id` and `slug` that are stable and readable.
+4. Add the koan object to `src/koans/vegaKoans.ts` and place it in the intended `order`.
+5. Define a `targetSpec` that clearly shows the intended final output.
+6. Define a `startingSpec` that is close enough to guide discovery, but incomplete enough to leave the intended concept for the learner to find.
+7. Add `checks` that match the current validation stage.
+8. Prefer rendered-output checks when the desired behavior can be expressed clearly that way.
+9. Keep `instructions` concise and task-focused rather than tutorial-like.
+10. Run the app and manually verify:
+    - the koan appears in the browser page
+    - the koan route loads correctly
+    - the target chart renders
+    - the starting spec renders or fails in an understandable way
+    - the checks pass for a correct solution and fail for an incorrect one
+
+## Practical guidance
+
+- Keep datasets small enough to inspect directly in the dataset viewer.
+- Prefer one concept per koan, especially for beginner koans.
+- Keep the `startingSpec` readable; avoid large generated specs.
+- If a koan only needs a simple structural requirement, a spec-shape check is acceptable.
+- If the important outcome is what the learner sees, use rendered-output checks.
+- Avoid adding checks that duplicate each other unless they catch meaningfully different mistakes.
 
 ## Future expansion
 
