@@ -361,6 +361,71 @@ a {
   font-size: 0.9rem;
 }
 
+.profile-identity,
+.profile-summary-panel {
+  margin-top: 24px;
+  border: 1px solid #d5dce3;
+  padding: 16px;
+}
+
+.profile-identity h3 {
+  margin: 0;
+}
+
+.profile-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.profile-stat-card {
+  border: 1px solid #d5dce3;
+  padding: 16px;
+}
+
+.profile-stat-value {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.profile-koan-list {
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.profile-koan-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  padding: 12px 0;
+}
+
+.profile-koan-item + .profile-koan-item {
+  border-top: 1px solid #d5dce3;
+}
+
+.profile-koan-title {
+  margin: 0;
+  font-weight: 600;
+}
+
+.profile-koan-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.profile-attempt-count {
+  color: #5d6b78;
+  white-space: nowrap;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
