@@ -239,6 +239,13 @@ a {
   margin: 0;
 }
 
+.editor-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 16px 0;
+}
+
 .spec-editor {
   width: 100%;
   min-height: 360px;
