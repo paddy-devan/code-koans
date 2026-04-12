@@ -82,7 +82,7 @@ export function VegaKoanPage() {
   }
 
   return (
-    <section className="panel panel-wide koan-page">
+    <section className="panel koan-page">
       <div className="koan-top-grid">
         <section className="detail-card koan-info-card">
           <h2>{koan.title}</h2>

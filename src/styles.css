@@ -1,5 +1,4 @@
 :root {
-  --panel-width: 960px;
   --page-width: 1280px;
   font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
   line-height: 1.5;
@@ -35,13 +34,13 @@ a {
 
 .site-header,
 .panel {
+  max-width: var(--page-width);
   margin: 0 auto;
   background: #ffffff;
   border: 1px solid #d5dce3;
 }
 
 .site-header {
-  max-width: var(--page-width);
   padding: 24px;
 }
 
@@ -87,12 +86,7 @@ a {
 }
 
 .panel {
-  max-width: var(--panel-width);
   padding: 24px;
-}
-
-.panel-wide {
-  max-width: var(--page-width);
 }
 
 .panel p:last-child {
