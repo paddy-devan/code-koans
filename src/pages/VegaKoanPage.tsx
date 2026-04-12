@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import { JsonSpecEditor } from "../components/JsonSpecEditor";
 import { ValidationResultPanel } from "../components/ValidationResultPanel";
 import { VegaChart } from "../components/VegaChart";
 import { clearKoanDraft, getKoanDraft, saveKoanDraft } from "../lib/drafts";
+import { formatJsonText } from "../lib/jsonFormatting";
 import { getCachedProgress, loadProgress, recordSubmissionAttempt } from "../lib/persistence";
 import { getVegaKoanById } from "../koans/vegaKoans";
 import type { VegaValidationResult } from "../validation/vegaValidation";
@@ -53,6 +55,16 @@ export function VegaKoanPage() {
       };
     }
   }, [koan, specText]);
+
+  function handleSpecChange(nextText: string) {
+    if (!koan) {
+      return;
+    }
+
+    setSpecText(nextText);
+    saveKoanDraft(koan.id, nextText);
+    setValidationResult(null);
+  }
 
   if (!koan) {
     return (
@@ -149,17 +161,19 @@ export function VegaKoanPage() {
         <label className="sr-only" htmlFor="vega-spec-editor">
           Vega spec editor
         </label>
-        <textarea
+        <JsonSpecEditor
           id="vega-spec-editor"
-          className="spec-editor"
           value={specText}
-          onChange={(event) => {
-            const nextText = event.target.value;
-            setSpecText(nextText);
-            saveKoanDraft(koan.id, nextText);
-            setValidationResult(null);
+          onChange={handleSpecChange}
+          onFormat={() => {
+            if (!parsedSpec?.spec) {
+              return;
+            }
+
+            handleSpecChange(formatJsonText(specText));
           }}
-          spellCheck={false}
+          formatDisabled={!parsedSpec?.spec || isChecking}
+          disabled={isChecking}
         />
         {parsedSpec?.error ? (
           <p className="editor-error" role="alert">
