@@ -6,7 +6,6 @@ export function VegaLandingPage() {
 
   return (
     <section className="panel">
-      <p className="eyebrow">Checkpoint 12</p>
       <h2>{track?.name ?? "Vega"} Track</h2>
       <p>{track?.summary}</p>
       <p className="support-copy">

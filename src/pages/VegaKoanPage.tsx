@@ -70,7 +70,6 @@ export function VegaKoanPage() {
   if (!koan) {
     return (
       <section className="panel">
-        <p className="eyebrow">Checkpoint 9</p>
         <h2>Koan Not Found</h2>
         <p>No Vega koan exists for the id "{koanId ?? "unknown"}".</p>
         <p>
@@ -83,31 +82,102 @@ export function VegaKoanPage() {
   }
 
   return (
-    <section className="panel">
-      <p className="eyebrow">Checkpoint 9</p>
-      <h2>{koan.title}</h2>
-      <p>{koan.summary}</p>
-      <p className="progress-line">
-        Status:{" "}
-        <span className={isCompleted ? "status-badge completed" : "status-badge pending"}>
-          {isCompleted ? "Completed" : "Not completed"}
-        </span>
-      </p>
-
-      <div className="chart-grid">
-        <section className="chart-stage chart-stage-target">
-          <div className="chart-stage-header">
-            <p className="eyebrow">Reference</p>
-            <p className="chart-stage-copy">Match this output as closely as you can.</p>
+    <section className="panel panel-wide koan-page">
+      <div className="koan-top-grid">
+        <section className="detail-card koan-info-card">
+          <h2>{koan.title}</h2>
+          <div className="koan-tag-row">
+            <span className={isCompleted ? "status-badge completed" : "status-badge pending"}>
+              {isCompleted ? "Completed" : "Not completed"}
+            </span>
+            <span className="meta-tag">{koan.difficulty}</span>
+            <span className="meta-tag">{koan.topic}</span>
           </div>
-          <VegaChart dataset={koan.dataset} spec={koan.targetSpec} title="Target Chart" />
+          <p>{koan.summary}</p>
+          <p>{koan.instructions}</p>
         </section>
 
-        <section className="chart-stage chart-stage-preview">
-          <div className="chart-stage-header">
-            <p className="eyebrow">Your Work</p>
-            <p className="chart-stage-copy">The preview updates from the current editor draft.</p>
+        <section className="koan-panel-card chart-stage-target">
+          <VegaChart dataset={koan.dataset} spec={koan.targetSpec} title="Target Chart" />
+        </section>
+      </div>
+
+      <div className="koan-workspace-grid">
+        <section className="editor-panel">
+          <div className="editor-header">
+            <h3>Vega Spec</h3>
+            <div className="editor-actions editor-actions-top">
+              <button
+                type="button"
+                className="primary-button compact-button"
+                onClick={() => {
+                  if (!parsedSpec?.spec) {
+                    return;
+                  }
+
+                  setIsChecking(true);
+
+                  void validateVegaSpec(koan, parsedSpec.spec).then((nextValidationResult) => {
+                    setValidationResult(nextValidationResult);
+                    void recordSubmissionAttempt({
+                      koanId: koan.id,
+                      passed: nextValidationResult.passed,
+                    }).then((snapshot) => {
+                      setIsCompleted(snapshot.completedKoanIds.includes(koan.id));
+                      setIsChecking(false);
+                    });
+                  });
+                }}
+                disabled={!parsedSpec?.spec || isChecking}
+              >
+                {isChecking ? "Checking..." : "Submit"}
+              </button>
+              <button
+                type="button"
+                className="secondary-button compact-button"
+                onClick={() => {
+                  const startingSpecText = formatSpec(koan.startingSpec);
+                  clearKoanDraft(koan.id);
+                  setSpecText(startingSpecText);
+                  setValidationResult(null);
+                }}
+                disabled={isChecking}
+              >
+                Reset
+              </button>
+              <button
+                type="button"
+                className="secondary-button compact-button"
+                onClick={() => {
+                  if (!parsedSpec?.spec) {
+                    return;
+                  }
+
+                  handleSpecChange(formatJsonText(specText));
+                }}
+                disabled={!parsedSpec?.spec || isChecking}
+              >
+                Format
+              </button>
+            </div>
           </div>
+          <label className="sr-only" htmlFor="vega-spec-editor">
+            Vega spec editor
+          </label>
+          <JsonSpecEditor
+            id="vega-spec-editor"
+            value={specText}
+            onChange={handleSpecChange}
+            disabled={isChecking}
+          />
+          {parsedSpec?.error ? (
+            <p className="editor-error" role="alert">
+              JSON error: {parsedSpec.error}
+            </p>
+          ) : null}
+        </section>
+
+        <section className="koan-panel-card chart-stage-preview workspace-preview-panel">
           {parsedSpec?.spec ? (
             <VegaChart dataset={koan.dataset} spec={parsedSpec.spec} title="Live Preview" />
           ) : (
@@ -121,112 +191,12 @@ export function VegaKoanPage() {
             </section>
           )}
         </section>
+
+        <section className="dataset-panel workspace-dataset-panel">
+          <h3>Dataset</h3>
+          <DatasetTable rows={koan.dataset} />
+        </section>
       </div>
-
-      <div className="detail-grid detail-grid-wide">
-        <div className="detail-card">
-          <h3>Instructions</h3>
-          <p>{koan.instructions}</p>
-          <p className="support-copy">
-            Edit the Vega JSON, compare your preview against the target chart, then submit when
-            the structure looks right.
-          </p>
-        </div>
-        <div className="detail-card">
-          <h3>Metadata</h3>
-          <dl className="meta-list">
-            <div>
-              <dt>Difficulty</dt>
-              <dd>{koan.difficulty}</dd>
-            </div>
-            <div>
-              <dt>Topic</dt>
-              <dd>{koan.topic}</dd>
-            </div>
-            <div>
-              <dt>Order</dt>
-              <dd>{koan.order}</dd>
-            </div>
-          </dl>
-        </div>
-      </div>
-
-      <section className="editor-panel">
-        <div className="editor-header">
-          <h3>Editable Spec</h3>
-          <p>
-            Update the Vega JSON below to change the live preview. Draft edits are saved in this
-            browser.
-          </p>
-        </div>
-        <label className="sr-only" htmlFor="vega-spec-editor">
-          Vega spec editor
-        </label>
-        <JsonSpecEditor
-          id="vega-spec-editor"
-          value={specText}
-          onChange={handleSpecChange}
-          onFormat={() => {
-            if (!parsedSpec?.spec) {
-              return;
-            }
-
-            handleSpecChange(formatJsonText(specText));
-          }}
-          formatDisabled={!parsedSpec?.spec || isChecking}
-          disabled={isChecking}
-        />
-        {parsedSpec?.error ? (
-          <p className="editor-error" role="alert">
-            JSON error: {parsedSpec.error}
-          </p>
-        ) : null}
-        <div className="editor-actions">
-          <button
-            type="button"
-            className="primary-button"
-            onClick={() => {
-              if (!parsedSpec?.spec) {
-                return;
-              }
-
-              setIsChecking(true);
-
-              void validateVegaSpec(koan, parsedSpec.spec).then((nextValidationResult) => {
-                setValidationResult(nextValidationResult);
-                void recordSubmissionAttempt({
-                  koanId: koan.id,
-                  passed: nextValidationResult.passed,
-                }).then((snapshot) => {
-                  setIsCompleted(snapshot.completedKoanIds.includes(koan.id));
-                  setIsChecking(false);
-                });
-              });
-            }}
-            disabled={!parsedSpec?.spec || isChecking}
-          >
-            {isChecking ? "Checking..." : "Submit / Check"}
-          </button>
-          <button
-            type="button"
-            className="secondary-button"
-            onClick={() => {
-              const startingSpecText = formatSpec(koan.startingSpec);
-              clearKoanDraft(koan.id);
-              setSpecText(startingSpecText);
-              setValidationResult(null);
-            }}
-            disabled={isChecking}
-          >
-            Reset To Starting Spec
-          </button>
-        </div>
-      </section>
-
-      <details className="dataset-panel">
-        <summary>View Dataset</summary>
-        <DatasetTable rows={koan.dataset} />
-      </details>
 
       <ValidationResultPanel result={validationResult} />
     </section>

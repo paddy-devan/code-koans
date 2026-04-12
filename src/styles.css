@@ -1,4 +1,5 @@
 :root {
+  --page-width: 1280px;
   font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -33,7 +34,7 @@ a {
 
 .site-header,
 .panel {
-  max-width: 960px;
+  max-width: var(--page-width);
   margin: 0 auto;
   background: #ffffff;
   border: 1px solid #d5dce3;
@@ -90,6 +91,28 @@ a {
 
 .panel p:last-child {
   margin-bottom: 0;
+}
+
+.koan-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.koan-top-grid,
+.koan-workspace-grid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.koan-top-grid {
+  align-items: stretch;
+}
+
+.koan-workspace-grid {
+  grid-template-rows: minmax(0, 1fr) auto;
+  align-items: stretch;
 }
 
 .track-grid {
@@ -165,17 +188,40 @@ a {
   padding: 16px;
 }
 
-.chart-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
-  margin-top: 24px;
+.koan-info-card h3,
+.dataset-panel h3 {
+  margin: 0;
 }
 
-.chart-stage {
+.koan-info-card h2,
+.koan-page .chart-header h3,
+.koan-page .editor-header h3,
+.koan-page .dataset-panel h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.koan-tag-row {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 16px;
+}
+
+.meta-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border: 1px solid #d5dce3;
+  font-size: 0.8rem;
+  text-transform: capitalize;
+  color: #5d6b78;
+}
+
+.koan-panel-card {
+  min-width: 0;
+  height: 100%;
 }
 
 .chart-stage-target .chart-panel {
@@ -186,10 +232,6 @@ a {
   border-color: #0a5c83;
 }
 
-.chart-stage-header .eyebrow {
-  margin-bottom: 4px;
-}
-
 .chart-stage-copy,
 .support-copy,
 .result-summary {
@@ -198,6 +240,9 @@ a {
 
 .chart-panel {
   border: 1px solid #d5dce3;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .chart-header {
@@ -212,6 +257,7 @@ a {
   min-height: 260px;
   padding: 16px;
   overflow-x: auto;
+  flex: 1 1 auto;
 }
 
 .chart-placeholder {
@@ -227,34 +273,35 @@ a {
 }
 
 .editor-panel {
-  margin-top: 24px;
   border: 1px solid #d5dce3;
+  grid-row: 1 / span 2;
+  display: flex;
+  flex-direction: column;
 }
 
 .editor-header {
-  padding: 16px 16px 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
 }
 
 .editor-header h3 {
   margin: 0;
 }
 
-.editor-toolbar {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding: 16px 16px 0;
-}
-
 .spec-editor {
   width: 100%;
-  min-height: 360px;
+  min-height: 0;
   padding: 16px;
   border: 0;
   border-top: 1px solid #d5dce3;
   font: inherit;
   font-family: "IBM Plex Mono", "SFMono-Regular", monospace;
-  resize: vertical;
+  resize: none;
+  flex: 1 1 auto;
 }
 
 .editor-error {
@@ -266,8 +313,7 @@ a {
 .editor-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  padding: 0 16px 16px;
+  gap: 8px;
 }
 
 .primary-button,
@@ -275,6 +321,12 @@ a {
   padding: 10px 14px;
   font: inherit;
   cursor: pointer;
+}
+
+.compact-button {
+  min-height: 36px;
+  padding: 6px 12px;
+  font-size: 0.95rem;
 }
 
 .primary-button {
@@ -296,7 +348,6 @@ a {
 }
 
 .result-panel {
-  margin-top: 24px;
   border: 1px solid #d5dce3;
 }
 
@@ -360,21 +411,9 @@ a {
   color: #5d6b78;
 }
 
-.progress-line {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .dataset-panel {
-  margin-top: 24px;
   border: 1px solid #d5dce3;
   padding: 16px;
-}
-
-.dataset-panel summary {
-  cursor: pointer;
-  font-weight: 600;
 }
 
 .dataset-table-shell {
@@ -488,20 +527,26 @@ a {
   margin-top: 0;
 }
 
-.meta-list {
-  margin: 0;
-}
+@media (max-width: 960px) {
+  .koan-top-grid,
+  .koan-workspace-grid {
+    grid-template-columns: 1fr;
+  }
 
-.meta-list div + div {
-  margin-top: 12px;
-}
+  .koan-workspace-grid {
+    grid-template-rows: auto;
+  }
 
-.meta-list dt {
-  font-weight: 600;
-}
+  .editor-panel {
+    grid-row: auto;
+    order: 2;
+  }
 
-.meta-list dd {
-  margin: 4px 0 0;
-  color: #5d6b78;
-  text-transform: capitalize;
+  .workspace-preview-panel {
+    order: 1;
+  }
+
+  .workspace-dataset-panel {
+    order: 3;
+  }
 }

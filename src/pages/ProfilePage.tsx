@@ -24,7 +24,6 @@ export function ProfilePage() {
 
   return (
     <section className="panel">
-      <p className="eyebrow">Checkpoint 10</p>
       <h2>Profile</h2>
       <p className="support-copy">Local learner profile for the current browser session.</p>
 

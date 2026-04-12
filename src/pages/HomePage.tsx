@@ -4,7 +4,6 @@ import { getTrackKoansPath, getTrackPath, trackDefinitions } from "../tracks";
 export function HomePage() {
   return (
     <section className="panel">
-      <p className="eyebrow">Checkpoint 12</p>
       <h2>Tracks</h2>
       <p className="support-copy">
         The app now has an explicit track concept. Vega is implemented; other tracks can follow the
