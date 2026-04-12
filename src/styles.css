@@ -377,11 +377,34 @@ a {
   font-weight: 600;
 }
 
-.dataset-preview {
+.dataset-table-shell {
   margin: 16px 0 0;
   overflow-x: auto;
+}
+
+.dataset-table {
+  width: 100%;
+  border-collapse: collapse;
   font-family: "IBM Plex Mono", "SFMono-Regular", monospace;
   font-size: 0.9rem;
+}
+
+.dataset-table th,
+.dataset-table td {
+  padding: 10px 12px;
+  border: 1px solid #d5dce3;
+  text-align: left;
+  vertical-align: top;
+}
+
+.dataset-table th {
+  font-weight: 600;
+  background: #f3f5f7;
+}
+
+.dataset-empty {
+  margin: 16px 0 0;
+  color: #5d6b78;
 }
 
 .profile-identity,

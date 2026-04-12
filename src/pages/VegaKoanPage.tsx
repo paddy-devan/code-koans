@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import { DatasetTable } from "../components/DatasetTable";
 import { JsonSpecEditor } from "../components/JsonSpecEditor";
 import { ValidationResultPanel } from "../components/ValidationResultPanel";
 import { VegaChart } from "../components/VegaChart";
@@ -224,7 +225,7 @@ export function VegaKoanPage() {
 
       <details className="dataset-panel">
         <summary>View Dataset</summary>
-        <pre className="dataset-preview">{JSON.stringify(koan.dataset, null, 2)}</pre>
+        <DatasetTable rows={koan.dataset} />
       </details>
 
       <ValidationResultPanel result={validationResult} />
