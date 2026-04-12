@@ -4,9 +4,7 @@ type JsonSpecEditorProps = {
   id: string;
   value: string;
   disabled?: boolean;
-  formatDisabled?: boolean;
   onChange: (nextValue: string) => void;
-  onFormat: () => void;
 };
 
 const INDENT = "  ";
@@ -111,9 +109,7 @@ export function JsonSpecEditor({
   id,
   value,
   disabled = false,
-  formatDisabled = false,
   onChange,
-  onFormat,
 }: JsonSpecEditorProps) {
   function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
     if (event.key !== "Tab") {
@@ -170,28 +166,16 @@ export function JsonSpecEditor({
   }
 
   return (
-    <>
-      <div className="editor-toolbar">
-        <button
-          type="button"
-          className="secondary-button"
-          onClick={onFormat}
-          disabled={disabled || formatDisabled}
-        >
-          Format JSON
-        </button>
-      </div>
-      <textarea
-        id={id}
-        className="spec-editor"
-        value={value}
-        onChange={(event) => {
-          onChange(event.target.value);
-        }}
-        onKeyDown={handleKeyDown}
-        spellCheck={false}
-        disabled={disabled}
-      />
-    </>
+    <textarea
+      id={id}
+      className="spec-editor"
+      value={value}
+      onChange={(event) => {
+        onChange(event.target.value);
+      }}
+      onKeyDown={handleKeyDown}
+      spellCheck={false}
+      disabled={disabled}
+    />
   );
 }

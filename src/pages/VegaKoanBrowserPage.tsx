@@ -14,7 +14,6 @@ export function VegaKoanBrowserPage() {
 
   return (
     <section className="panel">
-      <p className="eyebrow">Checkpoint 9</p>
       <h2>Vega Koan Browser</h2>
       <p>Select a koan and track completion through the persistence layer.</p>
 
