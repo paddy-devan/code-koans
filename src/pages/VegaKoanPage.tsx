@@ -106,7 +106,7 @@ export function VegaKoanPage() {
         <section className="editor-panel">
           <div className="editor-header">
             <h3>Vega Spec</h3>
-            <div className="editor-actions editor-actions-top">
+            <div className="editor-actions">
               <button
                 type="button"
                 className="primary-button compact-button"
