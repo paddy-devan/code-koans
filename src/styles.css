@@ -56,6 +56,13 @@ a {
   font-size: 0.875rem;
 }
 
+.site-footer-logo {
+  display: block;
+  width: 220px;
+  max-width: 60vw;
+  height: auto;
+}
+
 .site-brand {
   display: flex;
   align-items: center;

@@ -38,7 +38,7 @@ export function AppLayout() {
       </main>
 
       <footer className="site-footer">
-        <span>Code Koans</span>
+        <img className="site-footer-logo" src="/tagline-footer.svg" alt="Code Koans" />
         <span>Vega koans</span>
       </footer>
     </div>
