@@ -44,6 +44,20 @@ a {
   padding: 24px;
 }
 
+.site-brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.site-logo {
+  display: block;
+  width: 160px;
+  max-width: 36vw;
+  height: auto;
+  flex: 0 0 auto;
+}
+
 .site-title,
 .panel h2 {
   margin: 0;

@@ -13,9 +13,12 @@ export function AppLayout() {
   return (
     <div className="app-shell">
       <header className="site-header">
-        <div>
-          <p className="eyebrow">Code Koans</p>
-          <h1 className="site-title">Minimal learning tracks for technical tools.</h1>
+        <div className="site-brand">
+          <img className="site-logo" src="/logo-primary.svg" alt="Code Koans" />
+          <div>
+            <p className="eyebrow">Code Koans</p>
+            <h1 className="site-title">Minimal learning tracks for technical tools.</h1>
+          </div>
         </div>
         <nav aria-label="Primary">
           <ul className="nav-list">
