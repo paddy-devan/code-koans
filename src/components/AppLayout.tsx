@@ -36,6 +36,11 @@ export function AppLayout() {
       <main className="page-shell">
         <Outlet />
       </main>
+
+      <footer className="site-footer">
+        <span>Code Koans</span>
+        <span>Vega koans</span>
+      </footer>
     </div>
   );
 }
