@@ -63,6 +63,28 @@ a {
   height: auto;
 }
 
+.footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid #d5dce3;
+  color: #13202b;
+  text-decoration: none;
+}
+
+.footer-link-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  fill: currentColor;
+}
+
+.footer-link:hover,
+.footer-link:focus-visible {
+  border-color: #13202b;
+}
+
 .site-brand {
   display: flex;
   align-items: center;
