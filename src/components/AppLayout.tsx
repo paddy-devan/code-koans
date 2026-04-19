@@ -13,13 +13,9 @@ export function AppLayout() {
   return (
     <div className="app-shell">
       <header className="site-header">
-        <div className="site-brand">
+        <NavLink to="/" className="site-brand" aria-label="Code Koans home">
           <img className="site-logo" src="/logo-primary.svg" alt="Code Koans" />
-          <div>
-            <p className="eyebrow">Code Koans</p>
-            <h1 className="site-title">Minimal learning tracks for technical tools.</h1>
-          </div>
-        </div>
+        </NavLink>
         <nav aria-label="Primary">
           <ul className="nav-list">
             {navItems.map((item) => (
