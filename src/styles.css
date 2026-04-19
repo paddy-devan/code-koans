@@ -33,6 +33,7 @@ a {
 }
 
 .site-header,
+.site-footer,
 .panel {
   max-width: var(--page-width);
   margin: 0 auto;
@@ -40,11 +41,69 @@ a {
   border: 1px solid #d5dce3;
 }
 
-.site-header {
-  padding: 24px;
+.site-header,
+.site-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 12px 16px;
 }
 
-.site-title,
+.site-footer {
+  margin-top: 24px;
+  color: #5d6b78;
+  font-size: 0.875rem;
+}
+
+.site-footer-logo {
+  display: block;
+  width: 220px;
+  max-width: 60vw;
+  height: auto;
+}
+
+.footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid #d5dce3;
+  color: #13202b;
+  text-decoration: none;
+}
+
+.footer-link-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  fill: currentColor;
+}
+
+.footer-link:hover,
+.footer-link:focus-visible {
+  border-color: #13202b;
+}
+
+.site-brand {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  text-decoration: none;
+}
+
+.site-logo {
+  display: block;
+  width: 132px;
+  max-width: 44vw;
+  height: auto;
+  flex: 0 0 auto;
+}
+
+.site-header nav {
+  margin-left: auto;
+}
+
 .panel h2 {
   margin: 0;
   font-size: clamp(1.5rem, 3vw, 2.2rem);
@@ -62,15 +121,16 @@ a {
 .nav-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin: 20px 0 0;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .nav-link {
   display: inline-block;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border: 1px solid #d5dce3;
   text-decoration: none;
 }
@@ -527,5 +587,23 @@ a {
 
   .workspace-dataset-panel {
     order: 3;
+  }
+}
+
+@media (max-width: 640px) {
+  .site-header,
+  .site-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .site-header nav {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .nav-list {
+    justify-content: flex-start;
   }
 }
