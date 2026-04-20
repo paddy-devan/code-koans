@@ -296,7 +296,7 @@ Make it straightforward to add new Vega koans.
 - CMS/admin UI
 
 ## Status
-- not started
+- completed
 
 ---
 
@@ -316,6 +316,184 @@ Ensure the structure can support future tracks such as Regex.
 
 ## Not in scope
 - actual Regex implementation
+
+## Status
+- completed
+
+---
+
+# Checkpoint 13 — Worker production hosting
+
+## Goal
+Deploy the React app and Worker API as a single Cloudflare Worker-backed application.
+
+## Branch
+`checkpoint-13-worker-production-hosting`
+
+## Deliverables
+- Cloudflare Worker serves the Vite build output as static assets
+- `/api/*` requests are handled by the Worker
+- client-side routes use a single-page app fallback
+- production deploy script
+- local Worker development instructions
+- generated Worker build output removed from source control if present
+
+## Acceptance criteria
+- app can be built and deployed to Cloudflare Workers
+- deployed app serves static assets and API routes from the same Worker
+- direct visits and refreshes work for client routes such as:
+  - `/`
+  - `/vega`
+  - `/vega/koans`
+  - `/vega/koans/bar-chart-basics`
+  - `/profile`
+- existing local development flow still works
+- deployment steps are documented clearly
+
+## Not in scope
+- user authentication
+- account-specific progress
+- production auth hardening
+- UI redesign
+
+## Status
+- not started
+
+---
+
+# Checkpoint 14 — User-scoped D1 schema
+
+## Goal
+Prepare the backend data model for real user accounts and account-specific progress.
+
+## Branch
+`checkpoint-14-user-scoped-d1`
+
+## Deliverables
+- D1 migration for user/account tables
+- D1 migration for user-scoped progress
+- D1 migration for user-scoped submission attempts
+- D1 migration for session storage if sessions will be owned by the app
+- backend data-access helpers for user-scoped progress reads/writes
+- temporary development user path only if needed to keep endpoints testable before login exists
+
+## Acceptance criteria
+- migrations apply locally
+- migrations are safe to apply remotely
+- backend progress logic is structured around an explicit user identity
+- existing app behavior remains runnable during the transition
+- old anonymous/global tables are not destructively removed until the replacement path is proven
+
+## Not in scope
+- GitHub OAuth
+- login UI
+- local-to-account progress merge
+- profile page redesign
+
+## Status
+- not started
+
+---
+
+# Checkpoint 15 — GitHub login
+
+## Goal
+Allow a user to sign in with GitHub and keep a server-backed session.
+
+## Branch
+`checkpoint-15-github-login`
+
+## Deliverables
+- GitHub OAuth login route
+- GitHub OAuth callback route
+- logout route
+- `/api/me` endpoint
+- secure HttpOnly session cookie
+- user upsert logic in D1
+- minimal signed-in/signed-out UI state
+- documented required Cloudflare secrets
+
+## Acceptance criteria
+- user can start login from the app
+- GitHub redirects back successfully
+- app can identify the signed-in user after refresh
+- logout clears the session
+- unauthenticated API responses are clear and intentional
+- secrets are not committed
+
+## Not in scope
+- account progress sync
+- social profile features
+- password auth
+- multi-provider auth
+
+## Status
+- not started
+
+---
+
+# Checkpoint 16 — Account progress sync
+
+## Goal
+Make cross-device koan progress work for signed-in users.
+
+## Branch
+`checkpoint-16-account-progress-sync`
+
+## Deliverables
+- signed-in progress reads from D1 as the canonical source
+- signed-in submissions write to D1
+- anonymous users retain local storage fallback behavior
+- frontend persistence boundary handles authenticated, anonymous, cached, and failed states clearly
+- optional local progress merge after first login
+- koan browser and koan page use the canonical progress snapshot when available
+
+## Acceptance criteria
+- completing a koan while signed in persists to D1
+- the same account sees completion on another browser/device
+- anonymous usage still works without login
+- local storage remains a cache/fallback rather than a competing canonical store
+- UI does not duplicate separate local-only and Worker-specific persistence logic
+
+## Not in scope
+- backend draft-spec persistence
+- advanced conflict resolution
+- analytics
+- gamification
+
+## Status
+- not started
+
+---
+
+# Checkpoint 17 — Production polish
+
+## Goal
+Make the production account and deployment flow coherent enough to run publicly.
+
+## Branch
+`checkpoint-17-production-polish`
+
+## Deliverables
+- profile page reflects the signed-in account and real account progress
+- clear signed-out state
+- tighter API error responses
+- same-origin API assumptions reviewed and CORS simplified where appropriate
+- production smoke-test checklist
+- deployment, migration, and secret-management documentation
+
+## Acceptance criteria
+- profile page shows real account identity and stats when signed in
+- profile page is useful and clear when signed out
+- production deploy steps can be followed from the repo docs
+- Worker/D1 migration workflow is documented
+- no unrelated UI redesign is mixed into production hardening
+
+## Not in scope
+- advanced user settings
+- admin tools
+- analytics platform
+- full visual redesign
 
 ## Status
 - not started
