@@ -21,6 +21,9 @@ type WorkerEnv = {
   DB: DatabaseBinding;
 };
 
+const DEVELOPMENT_USER_ID = "development-user";
+const DEVELOPMENT_USER_NAME = "Development Learner";
+
 function json(data: unknown, init?: ResponseInit) {
   return new Response(JSON.stringify(data), {
     ...init,
@@ -34,14 +37,35 @@ function json(data: unknown, init?: ResponseInit) {
   });
 }
 
-async function buildProgressSnapshot(db: DatabaseBinding): Promise<ProgressSnapshot> {
+async function getRequestUserId(db: DatabaseBinding) {
+  const timestamp = new Date().toISOString();
+
+  await db.batch([
+    db
+      .prepare(
+        "INSERT INTO users (id, display_name, created_at, updated_at) VALUES (?1, ?2, ?3, ?3) ON CONFLICT(id) DO UPDATE SET updated_at = excluded.updated_at",
+      )
+      .bind(DEVELOPMENT_USER_ID, DEVELOPMENT_USER_NAME, timestamp),
+  ]);
+
+  return DEVELOPMENT_USER_ID;
+}
+
+async function buildProgressSnapshot(
+  db: DatabaseBinding,
+  userId: string,
+): Promise<ProgressSnapshot> {
   const completedRows = await db
-    .prepare("SELECT koan_id FROM progress WHERE completed = 1 ORDER BY koan_id ASC")
+    .prepare(
+      "SELECT koan_id FROM user_progress WHERE user_id = ?1 AND completed = 1 ORDER BY koan_id ASC",
+    )
+    .bind(userId)
     .all<{ koan_id: string }>();
   const attemptRows = await db
     .prepare(
-      "SELECT koan_id, COUNT(*) AS attempt_count FROM submission_attempts GROUP BY koan_id ORDER BY koan_id ASC",
+      "SELECT koan_id, COUNT(*) AS attempt_count FROM user_submission_attempts WHERE user_id = ?1 GROUP BY koan_id ORDER BY koan_id ASC",
     )
+    .bind(userId)
     .all<{ koan_id: string; attempt_count: number }>();
 
   return {
@@ -61,7 +85,9 @@ export default {
     }
 
     if (request.method === "GET" && url.pathname === "/api/progress") {
-      return json(await buildProgressSnapshot(env.DB));
+      const userId = await getRequestUserId(env.DB);
+
+      return json(await buildProgressSnapshot(env.DB, userId));
     }
 
     if (request.method === "POST" && url.pathname === "/api/submissions") {
@@ -72,25 +98,26 @@ export default {
       }
 
       const timestamp = new Date().toISOString();
+      const userId = await getRequestUserId(env.DB);
 
       await env.DB.batch([
         env.DB
           .prepare(
-            "INSERT INTO submission_attempts (koan_id, passed, created_at) VALUES (?1, ?2, ?3)",
+            "INSERT INTO user_submission_attempts (user_id, koan_id, passed, created_at) VALUES (?1, ?2, ?3, ?4)",
           )
-          .bind(payload.koanId, payload.passed ? 1 : 0, timestamp),
+          .bind(userId, payload.koanId, payload.passed ? 1 : 0, timestamp),
         ...(payload.passed
           ? [
               env.DB
                 .prepare(
-                  "INSERT INTO progress (koan_id, completed, completed_at) VALUES (?1, 1, ?2) ON CONFLICT(koan_id) DO UPDATE SET completed = 1, completed_at = excluded.completed_at",
+                  "INSERT INTO user_progress (user_id, koan_id, completed, completed_at) VALUES (?1, ?2, 1, ?3) ON CONFLICT(user_id, koan_id) DO UPDATE SET completed = 1, completed_at = excluded.completed_at",
                 )
-                .bind(payload.koanId, timestamp),
+                .bind(userId, payload.koanId, timestamp),
             ]
           : []),
       ]);
 
-      return json(await buildProgressSnapshot(env.DB));
+      return json(await buildProgressSnapshot(env.DB, userId));
     }
 
     return json({ error: "Not found." }, { status: 404 });

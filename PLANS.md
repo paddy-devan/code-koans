@@ -391,7 +391,7 @@ Prepare the backend data model for real user accounts and account-specific progr
 - profile page redesign
 
 ## Status
-- not started
+- completed
 
 ---
 
