@@ -39,14 +39,51 @@ const SESSION_COOKIE_NAME = "code_koans_session";
 const OAUTH_STATE_COOKIE_NAME = "code_koans_oauth_state";
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 
-function json(data: unknown, init?: ResponseInit) {
+function getCorsHeaders(request: Request): Record<string, string> {
+  const origin = request.headers.get("Origin");
+  const requestUrl = new URL(request.url);
+
+  if (!origin) {
+    return {};
+  }
+
+  const originUrl = new URL(origin);
+  const isLocalOrigin = originUrl.hostname === "localhost" || originUrl.hostname === "127.0.0.1";
+  const isLocalRequest =
+    requestUrl.hostname === "localhost" || requestUrl.hostname === "127.0.0.1";
+
+  if (!isLocalOrigin || !isLocalRequest) {
+    return {};
+  }
+
+  return {
+    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Credentials": "true",
+    Vary: "Origin",
+  };
+}
+
+function json(request: Request, data: unknown, init?: ResponseInit) {
   return new Response(JSON.stringify(data), {
     ...init,
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "Content-Type",
-      "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+      "Cache-Control": "no-store",
+      ...getCorsHeaders(request),
+      ...init?.headers,
+    },
+  });
+}
+
+function empty(request: Request, status: number, init?: ResponseInit) {
+  return new Response(null, {
+    ...init,
+    status,
+    headers: {
+      "Cache-Control": "no-store",
+      ...getCorsHeaders(request),
       ...init?.headers,
     },
   });
@@ -143,8 +180,21 @@ async function getAuthenticatedUser(request: Request, db: DatabaseBinding) {
   return sessionRows.results[0] ?? null;
 }
 
-function getRequiredUserResponse() {
-  return json({ error: "Authentication required." }, { status: 401 });
+function getRequiredUserResponse(request: Request) {
+  return json(request, { error: "Authentication required." }, { status: 401 });
+}
+
+function methodNotAllowed(request: Request, allowedMethods: string[]) {
+  return json(
+    request,
+    { error: "Method not allowed." },
+    {
+      status: 405,
+      headers: {
+        Allow: allowedMethods.join(", "),
+      },
+    },
+  );
 }
 
 function normalizeProgressSnapshot(value: unknown): ProgressSnapshot {
@@ -335,12 +385,16 @@ export default {
     const url = new URL(request.url);
 
     if (request.method === "OPTIONS") {
-      return json(null, { status: 204 });
+      return empty(request, 204, {
+        headers: {
+          Allow: "GET,POST,OPTIONS",
+        },
+      });
     }
 
     if (request.method === "GET" && url.pathname === "/auth/login") {
       if (!env.GITHUB_CLIENT_ID || !env.GITHUB_CLIENT_SECRET) {
-        return json({ error: "GitHub OAuth is not configured." }, { status: 503 });
+        return json(request, { error: "GitHub OAuth is not configured." }, { status: 503 });
       }
 
       const state = createRandomToken();
@@ -363,7 +417,7 @@ export default {
       const code = url.searchParams.get("code");
 
       if (!expectedState || !state || expectedState !== state || !code) {
-        return json({ error: "Invalid GitHub OAuth callback." }, { status: 400 });
+        return json(request, { error: "Invalid GitHub OAuth callback." }, { status: 400 });
       }
 
       try {
@@ -377,12 +431,13 @@ export default {
           clearCookie(request, OAUTH_STATE_COOKIE_NAME),
         ]);
       } catch {
-        return json({ error: "GitHub login failed." }, { status: 502 });
+        return json(request, { error: "GitHub login failed." }, { status: 502 });
       }
     }
 
     if (request.method === "POST" && url.pathname === "/auth/logout") {
       return json(
+        request,
         { ok: true },
         {
           headers: {
@@ -395,7 +450,7 @@ export default {
     if (request.method === "GET" && url.pathname === "/api/me") {
       const user = await getAuthenticatedUser(request, env.DB);
 
-      return json({
+      return json(request, {
         authenticated: Boolean(user),
         user,
       });
@@ -405,38 +460,38 @@ export default {
       const user = await getAuthenticatedUser(request, env.DB);
 
       if (!user) {
-        return getRequiredUserResponse();
+        return getRequiredUserResponse(request);
       }
 
-      return json(await buildProgressSnapshot(env.DB, user.id));
+      return json(request, await buildProgressSnapshot(env.DB, user.id));
     }
 
     if (request.method === "POST" && url.pathname === "/api/progress/merge") {
       const user = await getAuthenticatedUser(request, env.DB);
 
       if (!user) {
-        return getRequiredUserResponse();
+        return getRequiredUserResponse(request);
       }
 
       const snapshot = normalizeProgressSnapshot(await request.json());
 
       await mergeProgressSnapshot(env.DB, user.id, snapshot);
 
-      return json(await buildProgressSnapshot(env.DB, user.id));
+      return json(request, await buildProgressSnapshot(env.DB, user.id));
     }
 
     if (request.method === "POST" && url.pathname === "/api/submissions") {
       const payload = (await request.json()) as SubmissionPayload;
 
       if (typeof payload.koanId !== "string" || typeof payload.passed !== "boolean") {
-        return json({ error: "Invalid submission payload." }, { status: 400 });
+        return json(request, { error: "Invalid submission payload." }, { status: 400 });
       }
 
       const timestamp = new Date().toISOString();
       const user = await getAuthenticatedUser(request, env.DB);
 
       if (!user) {
-        return getRequiredUserResponse();
+        return getRequiredUserResponse(request);
       }
 
       await env.DB.batch([
@@ -456,9 +511,29 @@ export default {
           : []),
       ]);
 
-      return json(await buildProgressSnapshot(env.DB, user.id));
+      return json(request, await buildProgressSnapshot(env.DB, user.id));
     }
 
-    return json({ error: "Not found." }, { status: 404 });
+    if (url.pathname === "/auth/login" || url.pathname === "/auth/callback") {
+      return methodNotAllowed(request, ["GET", "OPTIONS"]);
+    }
+
+    if (url.pathname === "/auth/logout") {
+      return methodNotAllowed(request, ["POST", "OPTIONS"]);
+    }
+
+    if (url.pathname === "/api/me" || url.pathname === "/api/progress") {
+      return methodNotAllowed(request, ["GET", "OPTIONS"]);
+    }
+
+    if (url.pathname === "/api/progress/merge" || url.pathname === "/api/submissions") {
+      return methodNotAllowed(request, ["POST", "OPTIONS"]);
+    }
+
+    if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/auth/")) {
+      return json(request, { error: "Not found." }, { status: 404 });
+    }
+
+    return json(request, { error: "Not found." }, { status: 404 });
   },
 };

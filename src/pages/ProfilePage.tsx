@@ -48,7 +48,7 @@ export function ProfilePage() {
       <p className="support-copy">
         {authState.authenticated
           ? "Account-backed learner profile."
-          : "Local learner profile until you sign in."}
+          : "Local progress is available in this browser. Sign in to sync progress across devices."}
       </p>
 
       <section className="profile-identity">
@@ -68,7 +68,7 @@ export function ProfilePage() {
                 ? `Signed in with GitHub${
                     authState.user?.githubUsername ? ` as ${authState.user.githubUsername}` : ""
                   }.`
-                : "Sign in to attach progress to an account."}
+                : "Your current progress stays in this browser until you connect a GitHub account."}
             </p>
           </div>
         </div>

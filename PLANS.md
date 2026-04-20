@@ -496,4 +496,4 @@ Make the production account and deployment flow coherent enough to run publicly.
 - full visual redesign
 
 ## Status
-- not started
+- completed

@@ -151,6 +151,45 @@ npm run deploy
 
 The current backend supports GitHub login, account sessions, and account-backed progress sync.
 
+## Production smoke test
+
+After deploying, check the deployed Worker URL:
+
+```bash
+curl -I https://code-koans.p-devaney96.workers.dev/
+curl -I https://code-koans.p-devaney96.workers.dev/vega/koans/bar-chart-basics
+curl -sS -D - -o /dev/null https://code-koans.p-devaney96.workers.dev/auth/login
+curl https://code-koans.p-devaney96.workers.dev/api/me
+```
+
+Expected results:
+
+- `/` returns `200` HTML
+- `/vega/koans/bar-chart-basics` returns `200` HTML through the SPA fallback
+- `/auth/login` returns a GitHub redirect when OAuth secrets are configured
+- `/api/me` returns signed-out JSON before login
+
+Then test in the browser:
+
+1. Open the deployed Worker URL.
+2. Sign in with GitHub.
+3. Confirm GitHub redirects back to `/profile`.
+4. Confirm the header shows the signed-in user.
+5. Complete a koan.
+6. Refresh the page and confirm progress remains.
+7. Open another browser or device, sign in with the same GitHub account, and confirm progress is visible.
+8. Sign out and confirm the profile returns to the signed-out state.
+
+## Operations notes
+
+- D1 schema changes live in `migrations/`.
+- Apply local migrations with `npm run d1:migrate:local`.
+- Apply remote migrations with `npm run d1:migrate:remote`.
+- Deploy with `npm run deploy`.
+- Store deployed OAuth credentials with `npx wrangler secret put`.
+- Store local OAuth credentials in `.dev.vars`; never commit that file.
+- The Worker is the canonical source of signed-in progress. Browser local storage remains the anonymous fallback/cache.
+
 ## Project structure
 
 This will evolve, but the intended shape is roughly:
