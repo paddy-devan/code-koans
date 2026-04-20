@@ -72,7 +72,7 @@ This runs the Vite dev server only. If the Worker is not running, the app falls 
 
 Worker-backed progress is stored in D1 with user-scoped tables. Signed-in users are identified through a GitHub OAuth login and a server-side session stored in D1.
 
-Anonymous users can still use local browser progress because the frontend falls back to local storage when account-backed endpoints require authentication.
+Anonymous users can still use local browser progress because the frontend falls back to local storage when account-backed endpoints require authentication. After sign-in, cached local progress is merged into the account-backed D1 record and D1 becomes the canonical source.
 
 ## GitHub OAuth setup
 
@@ -149,7 +149,7 @@ npm run d1:migrate:remote
 npm run deploy
 ```
 
-The current backend supports GitHub login and account sessions. The next checkpoint will refine local-to-account progress sync.
+The current backend supports GitHub login, account sessions, and account-backed progress sync.
 
 ## Project structure
 

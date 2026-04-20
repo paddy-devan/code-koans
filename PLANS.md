@@ -462,7 +462,7 @@ Make cross-device koan progress work for signed-in users.
 - gamification
 
 ## Status
-- not started
+- completed
 
 ---
 

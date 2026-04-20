@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { getLoginUrl, loadCurrentUser, type AuthState } from "../lib/auth";
-import { getCachedProgress, loadProgress } from "../lib/persistence";
+import {
+  getCachedProgress,
+  loadProgress,
+  mergeCachedProgressToAccount,
+  type ProgressSource,
+} from "../lib/persistence";
 import { vegaKoans } from "../koans/vegaKoans";
 
 export function ProfilePage() {
@@ -8,19 +13,27 @@ export function ProfilePage() {
     authenticated: false,
     user: null,
   });
+  const [progressSource, setProgressSource] = useState<ProgressSource>("local");
   const [completedKoanIds, setCompletedKoanIds] = useState<string[]>([]);
   const [attemptCounts, setAttemptCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    void loadCurrentUser().then(setAuthState);
-
     const cachedProgress = getCachedProgress();
     setCompletedKoanIds(cachedProgress.completedKoanIds);
     setAttemptCounts(cachedProgress.attemptCounts);
 
-    void loadProgress().then((snapshot) => {
-      setCompletedKoanIds(snapshot.completedKoanIds);
-      setAttemptCounts(snapshot.attemptCounts);
+    void loadCurrentUser().then((nextAuthState) => {
+      setAuthState(nextAuthState);
+
+      const progressPromise = nextAuthState.authenticated
+        ? mergeCachedProgressToAccount()
+        : loadProgress();
+
+      void progressPromise.then((result) => {
+        setCompletedKoanIds(result.snapshot.completedKoanIds);
+        setAttemptCounts(result.snapshot.attemptCounts);
+        setProgressSource(result.source);
+      });
     });
   }, []);
 
@@ -64,6 +77,14 @@ export function ProfilePage() {
             Sign in with GitHub
           </a>
         ) : null}
+        <p className="support-copy">
+          Progress source:{" "}
+          {progressSource === "remote"
+            ? "account"
+            : progressSource === "unauthenticated"
+              ? "local browser"
+              : "local fallback"}
+        </p>
       </section>
 
       <div className="profile-stats">
