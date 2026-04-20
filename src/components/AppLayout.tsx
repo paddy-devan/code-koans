@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
+import { getLoginUrl, loadCurrentUser, logout, type AuthState } from "../lib/auth";
 import { getTrackKoanPath, getTrackKoansPath, getTrackPath } from "../tracks";
 
 const navItems = [
@@ -10,6 +12,20 @@ const navItems = [
 ];
 
 export function AppLayout() {
+  const [authState, setAuthState] = useState<AuthState>({
+    authenticated: false,
+    user: null,
+  });
+
+  useEffect(() => {
+    void loadCurrentUser().then(setAuthState);
+  }, []);
+
+  async function handleLogout() {
+    await logout();
+    setAuthState({ authenticated: false, user: null });
+  }
+
   return (
     <div className="app-shell">
       <header className="site-header">
@@ -29,6 +45,22 @@ export function AppLayout() {
                 </NavLink>
               </li>
             ))}
+            <li className="auth-nav-item">
+              {authState.authenticated ? (
+                <>
+                  <span className="auth-label">
+                    {authState.user?.githubUsername ?? authState.user?.displayName ?? "Signed in"}
+                  </span>
+                  <button className="nav-link nav-button" type="button" onClick={handleLogout}>
+                    Sign out
+                  </button>
+                </>
+              ) : (
+                <a className="nav-link" href={getLoginUrl()}>
+                  Sign in
+                </a>
+              )}
+            </li>
           </ul>
         </nav>
       </header>

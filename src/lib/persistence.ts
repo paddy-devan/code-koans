@@ -43,7 +43,9 @@ async function parseProgressResponse(response: Response) {
 
 export async function loadProgress() {
   try {
-    const response = await fetch(getApiUrl("/api/progress"));
+    const response = await fetch(getApiUrl("/api/progress"), {
+      credentials: "include",
+    });
     return await parseProgressResponse(response);
   } catch {
     return readProgressSnapshot();
@@ -54,6 +56,7 @@ export async function recordSubmissionAttempt(payload: SubmissionPayload) {
   try {
     const response = await fetch(getApiUrl("/api/submissions"), {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },

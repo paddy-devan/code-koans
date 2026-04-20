@@ -4,3 +4,6 @@ dist
 *.tsbuildinfo
 .wrangler
 workers/index.js
+.dev.vars
+.env.local
+.env.*.local

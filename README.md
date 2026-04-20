@@ -70,9 +70,31 @@ This runs the Vite dev server only. If the Worker is not running, the app falls 
 
 ## Progress persistence
 
-Worker-backed progress is stored in D1 with user-scoped tables. Until real login is added, the Worker resolves every request to a temporary `development-user` account so the backend is already structured around an explicit user identity.
+Worker-backed progress is stored in D1 with user-scoped tables. Signed-in users are identified through a GitHub OAuth login and a server-side session stored in D1.
 
-This is not production authentication. GitHub login and real account-specific progress are planned in the next checkpoints.
+Anonymous users can still use local browser progress because the frontend falls back to local storage when account-backed endpoints require authentication.
+
+## GitHub OAuth setup
+
+Create a GitHub OAuth app for the Worker URL you are deploying. For local Worker development, use:
+
+- Homepage URL: `http://127.0.0.1:8787`
+- Authorization callback URL: `http://127.0.0.1:8787/auth/callback`
+
+For the deployed Worker, use the deployed Worker origin and `/auth/callback`, for example:
+
+```text
+https://code-koans.p-devaney96.workers.dev/auth/callback
+```
+
+Store the OAuth credentials as Wrangler secrets:
+
+```bash
+npx wrangler secret put GITHUB_CLIENT_ID
+npx wrangler secret put GITHUB_CLIENT_SECRET
+```
+
+For local Worker development, put the same names in a local `.dev.vars` file. Do not commit that file.
 
 Worker-hosted app with local D1:
 
@@ -127,7 +149,7 @@ npm run d1:migrate:remote
 npm run deploy
 ```
 
-The current backend persistence uses a temporary development user. Later checkpoints will add GitHub login and real cross-device account progress.
+The current backend supports GitHub login and account sessions. The next checkpoint will refine local-to-account progress sync.
 
 ## Project structure
 
