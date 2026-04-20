@@ -428,7 +428,7 @@ Allow a user to sign in with GitHub and keep a server-backed session.
 - multi-provider auth
 
 ## Status
-- not started
+- completed
 
 ---
 

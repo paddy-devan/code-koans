@@ -1,12 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
+import { getLoginUrl, loadCurrentUser, type AuthState } from "../lib/auth";
 import { getCachedProgress, loadProgress } from "../lib/persistence";
 import { vegaKoans } from "../koans/vegaKoans";
 
 export function ProfilePage() {
+  const [authState, setAuthState] = useState<AuthState>({
+    authenticated: false,
+    user: null,
+  });
   const [completedKoanIds, setCompletedKoanIds] = useState<string[]>([]);
   const [attemptCounts, setAttemptCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
+    void loadCurrentUser().then(setAuthState);
+
     const cachedProgress = getCachedProgress();
     setCompletedKoanIds(cachedProgress.completedKoanIds);
     setAttemptCounts(cachedProgress.attemptCounts);
@@ -25,14 +32,38 @@ export function ProfilePage() {
   return (
     <section className="panel">
       <h2>Profile</h2>
-      <p className="support-copy">Local learner profile for the current browser session.</p>
+      <p className="support-copy">
+        {authState.authenticated
+          ? "Account-backed learner profile."
+          : "Local learner profile until you sign in."}
+      </p>
 
       <section className="profile-identity">
         <p className="eyebrow">Identity</p>
-        <h3>Local Learner</h3>
-        <p className="support-copy">
-          Placeholder identity until a real account system exists.
-        </p>
+        <div className="profile-identity-row">
+          {authState.user?.avatarUrl ? (
+            <img className="profile-avatar" src={authState.user.avatarUrl} alt="" />
+          ) : null}
+          <div>
+            <h3>
+              {authState.authenticated
+                ? authState.user?.displayName ?? authState.user?.githubUsername ?? "Signed in"
+                : "Local Learner"}
+            </h3>
+            <p className="support-copy">
+              {authState.authenticated
+                ? `Signed in with GitHub${
+                    authState.user?.githubUsername ? ` as ${authState.user.githubUsername}` : ""
+                  }.`
+                : "Sign in to attach progress to an account."}
+            </p>
+          </div>
+        </div>
+        {!authState.authenticated ? (
+          <a className="secondary-button profile-sign-in-link" href={getLoginUrl()}>
+            Sign in with GitHub
+          </a>
+        ) : null}
       </section>
 
       <div className="profile-stats">

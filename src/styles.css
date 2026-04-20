@@ -135,6 +135,24 @@ a {
   text-decoration: none;
 }
 
+.nav-button {
+  background: #ffffff;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+
+.auth-nav-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.auth-label {
+  color: #5d6b78;
+  font-size: 0.875rem;
+}
+
 .nav-link.active {
   border-color: #13202b;
   background: #13202b;
@@ -498,6 +516,24 @@ a {
 
 .profile-identity h3 {
   margin: 0;
+}
+
+.profile-identity-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.profile-avatar {
+  width: 44px;
+  height: 44px;
+  border: 1px solid #d5dce3;
+}
+
+.profile-sign-in-link {
+  display: inline-block;
+  margin-top: 16px;
+  text-decoration: none;
 }
 
 .profile-stats {
