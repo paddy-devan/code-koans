@@ -68,6 +68,12 @@ npm run dev
 
 This runs the Vite dev server only. If the Worker is not running, the app falls back to browser local storage for progress caching so frontend development stays usable.
 
+## Progress persistence
+
+Worker-backed progress is stored in D1 with user-scoped tables. Until real login is added, the Worker resolves every request to a temporary `development-user` account so the backend is already structured around an explicit user identity.
+
+This is not production authentication. GitHub login and real account-specific progress are planned in the next checkpoints.
+
 Worker-hosted app with local D1:
 
 1. Create a D1 database in Cloudflare and replace the placeholder `database_id` in `wrangler.jsonc`.
@@ -121,7 +127,7 @@ npm run d1:migrate:remote
 npm run deploy
 ```
 
-The current backend persistence is still anonymous/global. Later checkpoints will add user-scoped data, GitHub login, and cross-device account progress.
+The current backend persistence uses a temporary development user. Later checkpoints will add GitHub login and real cross-device account progress.
 
 ## Project structure
 
