@@ -7,8 +7,8 @@ export function VegaKoanBrowserPage() {
   const [completedKoanIds, setCompletedKoanIds] = useState<string[]>([]);
 
   useEffect(() => {
-    void loadProgress().then((snapshot) => {
-      setCompletedKoanIds(snapshot.completedKoanIds);
+    void loadProgress().then((result) => {
+      setCompletedKoanIds(result.snapshot.completedKoanIds);
     });
   }, []);
 

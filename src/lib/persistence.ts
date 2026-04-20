@@ -11,6 +11,13 @@ type SubmissionPayload = {
   passed: boolean;
 };
 
+export type ProgressSource = "remote" | "local" | "unauthenticated";
+
+export type ProgressLoadResult = {
+  snapshot: ProgressSnapshot;
+  source: ProgressSource;
+};
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
 function getApiUrl(path: string) {
@@ -41,14 +48,28 @@ async function parseProgressResponse(response: Response) {
   return snapshot;
 }
 
-export async function loadProgress() {
+export async function loadProgress(): Promise<ProgressLoadResult> {
   try {
     const response = await fetch(getApiUrl("/api/progress"), {
       credentials: "include",
     });
-    return await parseProgressResponse(response);
+
+    if (response.status === 401) {
+      return {
+        snapshot: readProgressSnapshot(),
+        source: "unauthenticated",
+      };
+    }
+
+    return {
+      snapshot: await parseProgressResponse(response),
+      source: "remote",
+    };
   } catch {
-    return readProgressSnapshot();
+    return {
+      snapshot: readProgressSnapshot(),
+      source: "local",
+    };
   }
 }
 
@@ -69,6 +90,38 @@ export async function recordSubmissionAttempt(payload: SubmissionPayload) {
     const nextSnapshot = applySubmissionToSnapshot(currentSnapshot, payload.koanId, payload.passed);
     writeProgressSnapshot(nextSnapshot);
     return nextSnapshot;
+  }
+}
+
+export async function mergeCachedProgressToAccount() {
+  const cachedProgress = readProgressSnapshot();
+
+  try {
+    const response = await fetch(getApiUrl("/api/progress/merge"), {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(cachedProgress),
+    });
+
+    if (response.status === 401) {
+      return {
+        snapshot: cachedProgress,
+        source: "unauthenticated" as const,
+      };
+    }
+
+    return {
+      snapshot: await parseProgressResponse(response),
+      source: "remote" as const,
+    };
+  } catch {
+    return {
+      snapshot: cachedProgress,
+      source: "local" as const,
+    };
   }
 }
 

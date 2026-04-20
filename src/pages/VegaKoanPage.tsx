@@ -34,8 +34,8 @@ export function VegaKoanPage() {
     setValidationResult(null);
     setIsCompleted(getCachedProgress().completedKoanIds.includes(koan.id));
 
-    void loadProgress().then((snapshot) => {
-      setIsCompleted(snapshot.completedKoanIds.includes(koan.id));
+    void loadProgress().then((result) => {
+      setIsCompleted(result.snapshot.completedKoanIds.includes(koan.id));
     });
   }, [koan]);
 

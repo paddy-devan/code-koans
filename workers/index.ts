@@ -3,6 +3,11 @@ type ProgressSnapshot = {
   attemptCounts: Record<string, number>;
 };
 
+type SubmissionPayload = {
+  koanId?: unknown;
+  passed?: unknown;
+};
+
 type QueryResult<T> = {
   results: T[];
 };
@@ -142,6 +147,27 @@ function getRequiredUserResponse() {
   return json({ error: "Authentication required." }, { status: 401 });
 }
 
+function normalizeProgressSnapshot(value: unknown): ProgressSnapshot {
+  const record = typeof value === "object" && value !== null ? (value as Record<string, unknown>) : {};
+  const completedKoanIds = Array.isArray(record.completedKoanIds)
+    ? record.completedKoanIds.filter((item): item is string => typeof item === "string")
+    : [];
+  const attemptCountsRecord =
+    typeof record.attemptCounts === "object" && record.attemptCounts !== null
+      ? (record.attemptCounts as Record<string, unknown>)
+      : {};
+
+  return {
+    completedKoanIds: Array.from(new Set(completedKoanIds)),
+    attemptCounts: Object.fromEntries(
+      Object.entries(attemptCountsRecord).filter(
+        (entry): entry is [string, number] =>
+          typeof entry[1] === "number" && Number.isInteger(entry[1]) && entry[1] > 0,
+      ),
+    ),
+  };
+}
+
 async function createSession(db: DatabaseBinding, request: Request, userId: string) {
   const sessionToken = createRandomToken();
   const sessionId = await hashToken(sessionToken);
@@ -273,6 +299,37 @@ async function buildProgressSnapshot(
   };
 }
 
+async function mergeProgressSnapshot(db: DatabaseBinding, userId: string, snapshot: ProgressSnapshot) {
+  const timestamp = new Date().toISOString();
+  const statements: D1Statement[] = [];
+
+  for (const koanId of snapshot.completedKoanIds) {
+    statements.push(
+      db
+        .prepare(
+          "INSERT INTO user_progress (user_id, koan_id, completed, completed_at) VALUES (?1, ?2, 1, ?3) ON CONFLICT(user_id, koan_id) DO UPDATE SET completed = 1, completed_at = COALESCE(user_progress.completed_at, excluded.completed_at)",
+        )
+        .bind(userId, koanId, timestamp),
+    );
+  }
+
+  for (const [koanId, attemptCount] of Object.entries(snapshot.attemptCounts)) {
+    for (let index = 0; index < attemptCount; index += 1) {
+      statements.push(
+        db
+          .prepare(
+            "INSERT INTO user_submission_attempts (user_id, koan_id, passed, created_at) VALUES (?1, ?2, 0, ?3)",
+          )
+          .bind(userId, koanId, timestamp),
+      );
+    }
+  }
+
+  if (statements.length > 0) {
+    await db.batch(statements);
+  }
+}
+
 export default {
   async fetch(request: Request, env: WorkerEnv): Promise<Response> {
     const url = new URL(request.url);
@@ -354,8 +411,22 @@ export default {
       return json(await buildProgressSnapshot(env.DB, user.id));
     }
 
+    if (request.method === "POST" && url.pathname === "/api/progress/merge") {
+      const user = await getAuthenticatedUser(request, env.DB);
+
+      if (!user) {
+        return getRequiredUserResponse();
+      }
+
+      const snapshot = normalizeProgressSnapshot(await request.json());
+
+      await mergeProgressSnapshot(env.DB, user.id, snapshot);
+
+      return json(await buildProgressSnapshot(env.DB, user.id));
+    }
+
     if (request.method === "POST" && url.pathname === "/api/submissions") {
-      const payload = (await request.json()) as { koanId?: unknown; passed?: unknown };
+      const payload = (await request.json()) as SubmissionPayload;
 
       if (typeof payload.koanId !== "string" || typeof payload.passed !== "boolean") {
         return json({ error: "Invalid submission payload." }, { status: 400 });
