@@ -1,18 +1,20 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "code-koans",
-  "main": "workers/index.ts",
-  "compatibility_date": "2026-03-18",
-  "assets": {
-    "directory": "./dist",
-    "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*"]
-  },
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "code-koans",
-      "database_id": "replace-with-your-d1-database-id"
-    }
-  ]
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "code-koans",
+	"main": "workers/index.ts",
+	"compatibility_date": "2026-03-18",
+	"assets": {
+		"directory": "./dist",
+		"not_found_handling": "single-page-application",
+		"run_worker_first": [
+			"/api/*"
+		]
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "code-koans-staging",
+			"database_id": "f6c3d87b-0f1e-4058-9eb7-d8b35abec56b"
+		}
+	]
 }
