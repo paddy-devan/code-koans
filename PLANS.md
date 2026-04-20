@@ -357,7 +357,7 @@ Deploy the React app and Worker API as a single Cloudflare Worker-backed applica
 - UI redesign
 
 ## Status
-- not started
+- completed
 
 ---
 

@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:worker": "wrangler dev",
+    "dev:worker": "npm run build && wrangler dev",
     "build": "tsc --noEmit --incremental false -p tsconfig.app.json && tsc --noEmit --incremental false -p tsconfig.node.json && tsc --noEmit --incremental false -p tsconfig.worker.json && vite build",
+    "deploy": "npm run build && wrangler deploy",
     "preview": "vite preview",
     "worker:typecheck": "tsc --noEmit --incremental false -p tsconfig.worker.json",
     "d1:migrate:local": "wrangler d1 migrations apply code-koans --local",
