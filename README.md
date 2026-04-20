@@ -50,18 +50,25 @@ When Worker-backed persistence is added later, it should become the canonical so
 - Vite
 - React Router
 - Cloudflare Workers
-- Cloudflare D1 later for persistence
+- Cloudflare D1 for progress persistence
 
 ## Running locally
+
+Install dependencies:
+
+```bash
+npm install
+```
 
 Frontend only:
 
 ```bash
-npm install
 npm run dev
 ```
 
-With local Worker and local D1:
+This runs the Vite dev server only. If the Worker is not running, the app falls back to browser local storage for progress caching so frontend development stays usable.
+
+Worker-hosted app with local D1:
 
 1. Create a D1 database in Cloudflare and replace the placeholder `database_id` in `wrangler.jsonc`.
 2. Apply the local migration:
@@ -76,13 +83,45 @@ npm run d1:migrate:local
 npm run dev:worker
 ```
 
-4. In a second terminal, start the frontend and point it at the local Worker:
+`npm run dev:worker` builds the Vite app into `dist/`, then runs `wrangler dev`. This mirrors the production shape: Cloudflare Workers serves the React assets and handles `/api/*` requests from the same Worker-backed application.
+
+For active frontend work against the local Worker API, you can still run Vite separately in a second terminal:
 
 ```bash
 VITE_API_BASE_URL=http://127.0.0.1:8787 npm run dev
 ```
 
-If the Worker is not running, the app still falls back to browser local storage for progress caching so the frontend remains usable during development.
+## Deploying to Cloudflare Workers
+
+Production is intended to run as a single Cloudflare Worker deployment:
+
+- static React assets are built to `dist/`
+- Wrangler uploads `dist/` as Worker static assets
+- `/api/*` requests run through `workers/index.ts`
+- client-side routes fall back to the SPA entrypoint
+
+Before deploying:
+
+1. Create the production D1 database if it does not already exist:
+
+```bash
+npx wrangler d1 create code-koans
+```
+
+2. Copy the returned database ID into `wrangler.jsonc`.
+3. Apply remote migrations:
+
+```bash
+npm run d1:migrate:remote
+```
+
+4. Build and deploy:
+
+```bash
+npm run deploy
+```
+
+The current backend persistence is still anonymous/global. Later checkpoints will add user-scoped data, GitHub login, and cross-device account progress.
 
 ## Project structure
 
