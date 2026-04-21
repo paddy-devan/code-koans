@@ -4,6 +4,7 @@ import { getVegaKoanById, orderedVegaKoans, vegaKoans } from "../koans/vegaKoans
 import { validateVegaSpec } from "./vegaValidation";
 
 const barChartKoan = getVegaKoanById("bar-chart-basics");
+const colorKoan = getVegaKoanById("color-by-category");
 const filterKoan = getVegaKoanById("filter-bars-by-value");
 const scatterplotKoan = getVegaKoanById("scatterplot-basics");
 
@@ -277,6 +278,27 @@ describe("committed Vega koan targets", () => {
 
     expect(result.passed).toBe(false);
     expect(result.results.find((check) => check.message.includes("higher y values"))?.passed).toBe(
+      false,
+    );
+  });
+
+  it("fails color validation when all categories use the same fill", async () => {
+    expect(colorKoan).toBeDefined();
+
+    const spec = cloneSpec(colorKoan!.targetSpec);
+    const firstMark = getFirstMark(spec);
+    const encode = firstMark.encode as {
+      enter: {
+        fill: unknown;
+      };
+    };
+
+    encode.enter.fill = { value: "#0a5c83" };
+
+    const result = await validateVegaSpec(colorKoan!, spec);
+
+    expect(result.passed).toBe(false);
+    expect(result.results.find((check) => check.message.includes("distinct fill colors"))?.passed).toBe(
       false,
     );
   });

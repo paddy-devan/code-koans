@@ -138,6 +138,14 @@ Available checks:
   tolerance?: number;
   message: string;
 }
+
+{
+  type: "distinctPropertyValues";
+  property: "fill" | "stroke" | "text" | "opacity";
+  expected: number;
+  markType?: string;
+  message: string;
+}
 ```
 
 Current robust uses:
@@ -145,6 +153,7 @@ Current robust uses:
 - simple vertical bar charts
 - sorted bar charts
 - simple scatterplots using `symbol` marks
+- basic categorical color checks with distinct rendered fills
 - checking that expected source datum reached rendered marks
 - checking relative positions and relative sizes
 
@@ -306,6 +315,22 @@ checks: [
   }
 ]
 ```
+
+### Color By Category
+
+When color is the lesson, validate rendered fill values rather than the existence of one specific scale:
+
+```ts
+{
+  type: "distinctPropertyValues",
+  property: "fill",
+  expected: 3,
+  markType: "rect",
+  message: "Render the three categories with three distinct fill colors."
+}
+```
+
+This accepts any implementation that produces distinct rendered fills. It does not require a specific color scale name.
 
 ### Formula Transform
 

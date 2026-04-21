@@ -354,6 +354,7 @@ MVP check types:
 - `datumFieldValues`
 - `relativePosition`
 - `relativeSize`
+- `distinctPropertyValues` for simple rendered-property checks such as categorical fill color
 
 MVP robust visual coverage:
 
@@ -698,6 +699,17 @@ Examples:
 - parameter value
 - toggle state
 
+### 9. Distinct Property Values
+
+Answers:
+
+- did rendered marks vary on a visual property when variation is the lesson?
+
+Examples:
+
+- bars have three distinct fill colors
+- selected and unselected marks have different opacity values
+
 ## Authoring Ergonomics
 
 Koan checks should be readable and close to the learning goal.
@@ -887,4 +899,3 @@ src/validation/
 ```
 
 The first implementation should keep files small and explicit. If a helper does not clearly reduce complexity, do not add it yet.
-

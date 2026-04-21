@@ -87,6 +87,13 @@ export type VegaKoanCheck =
       message: string;
     }
   | {
+      type: "distinctPropertyValues";
+      property: "fill" | "stroke" | "text" | "opacity";
+      expected: number;
+      markType?: string;
+      message: string;
+    }
+  | {
       type: "dataRowCount";
       dataName: string;
       expected: number;

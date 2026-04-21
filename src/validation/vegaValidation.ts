@@ -37,6 +37,7 @@ function isRenderedCheck(check: VegaKoanCheck) {
     check.type === "datumFieldValues" ||
     check.type === "relativePosition" ||
     check.type === "relativeSize" ||
+    check.type === "distinctPropertyValues" ||
     check.type === "dataRowCount" ||
     check.type === "dataFieldValues" ||
     check.type === "dataFieldOrder" ||
@@ -122,6 +123,13 @@ function getSize(item: SceneItem, measure: "width" | "height") {
   return typeof start === "number" && typeof end === "number" ? Math.abs(end - start) : undefined;
 }
 
+function getScenePropertyValue(
+  item: SceneItem,
+  property: "fill" | "stroke" | "text" | "opacity",
+) {
+  return item[property];
+}
+
 function getItemsByExpectedValues(
   sceneItems: SceneItem[],
   field: string,
@@ -197,6 +205,7 @@ function runSpecCheck(spec: Record<string, unknown>, check: VegaKoanCheck): Vega
     case "datumFieldValues":
     case "relativePosition":
     case "relativeSize":
+    case "distinctPropertyValues":
     case "dataRowCount":
     case "dataFieldValues":
     case "dataFieldOrder":
@@ -287,6 +296,16 @@ function runRenderedCheck(
             check.order,
             check.tolerance,
           ),
+      };
+    }
+    case "distinctPropertyValues": {
+      const values = getSceneItemsForCheck(renderedState, check)
+        .map((item) => getScenePropertyValue(item, check.property))
+        .filter((value): value is string | number => value !== undefined);
+
+      return {
+        message: check.message,
+        passed: new Set(values).size === check.expected,
       };
     }
     case "dataRowCount": {
