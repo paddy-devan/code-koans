@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
+import type { VegaKoan } from "../koans/types";
 import { getVegaKoanById } from "../koans/vegaKoans";
 import { validateVegaSpec } from "./vegaValidation";
 
 const barChartKoan = getVegaKoanById("bar-chart-basics");
+const filterKoan = getVegaKoanById("filter-bars-by-value");
 
 function cloneSpec(spec: Record<string, unknown>) {
   return JSON.parse(JSON.stringify(spec)) as Record<string, unknown>;
@@ -136,5 +138,94 @@ describe("validateVegaSpec scenegraph checks", () => {
     expect(result.results.find((check) => check.message.includes("relative bar heights"))?.passed).toBe(
       false,
     );
+  });
+});
+
+describe("validateVegaSpec dataflow checks", () => {
+  it("passes a transform-focused koan with the expected derived dataset", async () => {
+    expect(filterKoan).toBeDefined();
+
+    await expect(validateVegaSpec(filterKoan!, filterKoan!.targetSpec)).resolves.toMatchObject({
+      passed: true,
+    });
+  });
+
+  it("fails when the expected derived dataset is missing", async () => {
+    const result = await validateVegaSpec(filterKoan!, filterKoan!.startingSpec);
+
+    expect(result.passed).toBe(false);
+    expect(result.results.find((check) => check.message.includes("filteredTable dataset"))?.passed).toBe(
+      false,
+    );
+  });
+
+  it("fails when the derived dataset has the wrong filtered rows", async () => {
+    const spec = cloneSpec(filterKoan!.targetSpec);
+    const data = spec.data as Array<{ transform: Array<Record<string, unknown>> }>;
+
+    data[0].transform = [{ type: "filter", expr: "datum.value > 7" }];
+
+    const result = await validateVegaSpec(filterKoan!, spec);
+
+    expect(result.passed).toBe(false);
+    expect(result.results.find((check) => check.message.includes("two rows"))?.passed).toBe(false);
+    expect(result.results.find((check) => check.message.includes("Beta and Gamma"))?.passed).toBe(
+      false,
+    );
+  });
+
+  it("fails when derived data values are correct but ordered incorrectly", async () => {
+    const spec = cloneSpec(filterKoan!.targetSpec);
+    const data = spec.data as Array<{ transform: Array<Record<string, unknown>> }>;
+
+    data[0].transform = [
+      { type: "filter", expr: "datum.value >= 7" },
+      { type: "collect", sort: { field: "value", order: "descending" } },
+    ];
+
+    const result = await validateVegaSpec(filterKoan!, spec);
+
+    expect(result.passed).toBe(false);
+    expect(result.results.find((check) => check.message.includes("Beta and Gamma"))?.passed).toBe(
+      true,
+    );
+    expect(result.results.find((check) => check.message.includes("original order"))?.passed).toBe(
+      false,
+    );
+  });
+
+  it("can validate a simple runtime signal value", async () => {
+    const signalKoan: VegaKoan = {
+      id: "signal-fixture",
+      track: "vega",
+      slug: "signal-fixture",
+      title: "Signal Fixture",
+      summary: "Fixture",
+      instructions: "Fixture",
+      difficulty: "beginner",
+      topic: "signals",
+      order: 999,
+      dataset: [],
+      startingSpec: {},
+      targetSpec: {},
+      checks: [
+        {
+          type: "signalValue",
+          signalName: "threshold",
+          expected: 7,
+          message: "Expose the expected signal value.",
+        },
+      ],
+    };
+
+    const result = await validateVegaSpec(signalKoan, {
+      $schema: "https://vega.github.io/schema/vega/v5.json",
+      width: 100,
+      height: 100,
+      signals: [{ name: "threshold", value: 7 }],
+      marks: [],
+    });
+
+    expect(result).toMatchObject({ passed: true });
   });
 });

@@ -85,6 +85,33 @@ export type VegaKoanCheck =
       markType?: string;
       tolerance?: number;
       message: string;
+    }
+  | {
+      type: "dataRowCount";
+      dataName: string;
+      expected: number;
+      message: string;
+    }
+  | {
+      type: "dataFieldValues";
+      dataName: string;
+      field: string;
+      expected: VegaCheckPrimitive[];
+      ordered?: boolean;
+      message: string;
+    }
+  | {
+      type: "dataFieldOrder";
+      dataName: string;
+      field: string;
+      expected: VegaCheckPrimitive[];
+      message: string;
+    }
+  | {
+      type: "signalValue";
+      signalName: string;
+      expected: VegaCheckPrimitive;
+      message: string;
     };
 
 export type VegaKoan = {

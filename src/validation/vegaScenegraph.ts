@@ -18,11 +18,15 @@ export type SceneItem = {
   opacity?: number;
 };
 
+export type RuntimeDataRow = Record<string, unknown>;
+
 export type RenderedVegaState = {
   sceneItems: SceneItem[];
   markCount: number;
   markTypes: string[];
   xDomain: Array<string | number>;
+  data: Record<string, RuntimeDataRow[]>;
+  signals: Record<string, unknown>;
 };
 
 type VegaScenegraph = {
@@ -43,6 +47,22 @@ function getString(record: Record<string, unknown>, key: string) {
   const value = record[key];
 
   return typeof value === "string" ? value : undefined;
+}
+
+function asDataRows(value: unknown) {
+  return Array.isArray(value)
+    ? value.filter((row): row is RuntimeDataRow => asRecord(row) !== null)
+    : [];
+}
+
+function getScaleDomain(view: View, scaleName: string) {
+  try {
+    const scale = view.scale(scaleName) as { domain?: () => unknown[] } | undefined;
+
+    return scale?.domain?.();
+  } catch {
+    return [];
+  }
 }
 
 function normalizeSceneItem(item: Record<string, unknown>): SceneItem | null {
@@ -104,6 +124,10 @@ export function extractSceneItems(scenegraph: unknown): SceneItem[] {
 export async function renderVegaForValidation(
   spec: Record<string, unknown>,
   koan: VegaKoan,
+  options: {
+    dataNames?: string[];
+    signalNames?: string[];
+  } = {},
 ): Promise<RenderedVegaState> {
   const runtimeSpec = buildRuntimeVegaSpec(spec, koan.dataset);
   const view = new View(parse(runtimeSpec), { renderer: "none" });
@@ -112,8 +136,25 @@ export async function renderVegaForValidation(
     await view.runAsync();
 
     const sceneItems = extractSceneItems((view.scenegraph() as unknown as VegaScenegraph).root);
-    const xScale = view.scale("xscale") as { domain?: () => unknown[] } | undefined;
-    const xDomain = xScale?.domain?.();
+    const xDomain = getScaleDomain(view, "xscale");
+    const data: Record<string, RuntimeDataRow[]> = {};
+    const signals: Record<string, unknown> = {};
+
+    options.dataNames?.forEach((dataName) => {
+      try {
+        data[dataName] = asDataRows(view.data(dataName));
+      } catch {
+        data[dataName] = [];
+      }
+    });
+
+    options.signalNames?.forEach((signalName) => {
+      try {
+        signals[signalName] = view.signal(signalName);
+      } catch {
+        signals[signalName] = undefined;
+      }
+    });
 
     return {
       sceneItems,
@@ -124,6 +165,8 @@ export async function renderVegaForValidation(
             typeof value === "string" || typeof value === "number",
           )
         : [],
+      data,
+      signals,
     };
   } finally {
     view.finalize();

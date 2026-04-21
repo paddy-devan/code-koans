@@ -36,7 +36,31 @@ function isRenderedCheck(check: VegaKoanCheck) {
     check.type === "markType" ||
     check.type === "datumFieldValues" ||
     check.type === "relativePosition" ||
-    check.type === "relativeSize"
+    check.type === "relativeSize" ||
+    check.type === "dataRowCount" ||
+    check.type === "dataFieldValues" ||
+    check.type === "dataFieldOrder" ||
+    check.type === "signalValue"
+  );
+}
+
+function getDataNames(checks: VegaKoanCheck[]) {
+  return Array.from(
+    new Set(
+      checks.flatMap((check) =>
+        check.type === "dataRowCount" ||
+        check.type === "dataFieldValues" ||
+        check.type === "dataFieldOrder"
+          ? [check.dataName]
+          : [],
+      ),
+    ),
+  );
+}
+
+function getSignalNames(checks: VegaKoanCheck[]) {
+  return Array.from(
+    new Set(checks.flatMap((check) => (check.type === "signalValue" ? [check.signalName] : []))),
   );
 }
 
@@ -48,6 +72,14 @@ function getSceneItemsForCheck(renderedState: RenderedVegaState, check: { markTy
 
 function getDatumValue(item: SceneItem, field: string) {
   const value = item.datum?.[field];
+
+  return typeof value === "string" || typeof value === "number" || typeof value === "boolean"
+    ? value
+    : undefined;
+}
+
+function getRuntimeFieldValue(row: Record<string, unknown>, field: string) {
+  const value = row[field];
 
   return typeof value === "string" || typeof value === "number" || typeof value === "boolean"
     ? value
@@ -165,6 +197,10 @@ function runSpecCheck(spec: Record<string, unknown>, check: VegaKoanCheck): Vega
     case "datumFieldValues":
     case "relativePosition":
     case "relativeSize":
+    case "dataRowCount":
+    case "dataFieldValues":
+    case "dataFieldOrder":
+    case "signalValue":
       return {
         message: check.message,
         passed: false,
@@ -253,6 +289,43 @@ function runRenderedCheck(
           ),
       };
     }
+    case "dataRowCount": {
+      const rows = renderedState.data[check.dataName] ?? [];
+
+      return {
+        message: check.message,
+        passed: rows.length === check.expected,
+      };
+    }
+    case "dataFieldValues": {
+      const rows = renderedState.data[check.dataName] ?? [];
+      const actualValues = rows
+        .map((row) => getRuntimeFieldValue(row, check.field))
+        .filter((value): value is VegaCheckPrimitive => value !== undefined);
+
+      return {
+        message: check.message,
+        passed: check.ordered
+          ? hasSamePrimitiveOrder(actualValues, check.expected)
+          : hasSamePrimitiveValues(actualValues, check.expected),
+      };
+    }
+    case "dataFieldOrder": {
+      const rows = renderedState.data[check.dataName] ?? [];
+      const actualValues = rows
+        .map((row) => getRuntimeFieldValue(row, check.field))
+        .filter((value): value is VegaCheckPrimitive => value !== undefined);
+
+      return {
+        message: check.message,
+        passed: hasSamePrimitiveOrder(actualValues, check.expected),
+      };
+    }
+    case "signalValue":
+      return {
+        message: check.message,
+        passed: renderedState.signals[check.signalName] === check.expected,
+      };
     case "marks-min-count":
     case "first-mark-type":
     case "first-mark-fill":
@@ -271,7 +344,12 @@ export async function validateVegaSpec(
 ): Promise<VegaValidationResult> {
   try {
     const needsRenderedValidation = koan.checks.some((check) => isRenderedCheck(check));
-    const renderedState = needsRenderedValidation ? await renderVegaForValidation(spec, koan) : null;
+    const renderedState = needsRenderedValidation
+      ? await renderVegaForValidation(spec, koan, {
+          dataNames: getDataNames(koan.checks),
+          signalNames: getSignalNames(koan.checks),
+        })
+      : null;
 
     const results = koan.checks.map((check) =>
       isRenderedCheck(check) && renderedState

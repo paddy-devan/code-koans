@@ -362,6 +362,139 @@ export const vegaKoans: VegaKoan[] = [
       },
     ],
   },
+  {
+    id: "filter-bars-by-value",
+    track: "vega",
+    slug: "filter-bars-by-value",
+    title: "Filter Bars by Value",
+    summary: "Use a data transform to keep only larger values.",
+    instructions:
+      "Create a derived dataset named filteredTable that keeps rows with value at least 7, then render bars from that filtered data.",
+    difficulty: "beginner",
+    topic: "transforms",
+    order: 4,
+    dataset: [
+      { category: "Alpha", value: 4 },
+      { category: "Beta", value: 7 },
+      { category: "Gamma", value: 10 },
+      { category: "Delta", value: 2 },
+    ],
+    startingSpec: {
+      $schema: "https://vega.github.io/schema/vega/v5.json",
+      width: 320,
+      height: 200,
+      padding: 8,
+      scales: [
+        {
+          name: "xscale",
+          type: "band",
+          domain: { data: "table", field: "category" },
+          range: "width",
+          padding: 0.15,
+        },
+        {
+          name: "yscale",
+          domain: { data: "table", field: "value" },
+          nice: true,
+          range: "height",
+        },
+      ],
+      axes: [
+        { orient: "bottom", scale: "xscale" },
+        { orient: "left", scale: "yscale" },
+      ],
+      marks: [
+        {
+          type: "rect",
+          from: { data: "table" },
+          encode: {
+            enter: {
+              x: { scale: "xscale", field: "category" },
+              width: { scale: "xscale", band: 1 },
+              y: { scale: "yscale", field: "value" },
+              y2: { scale: "yscale", value: 0 },
+              fill: { value: "#0a5c83" },
+            },
+          },
+        },
+      ],
+    },
+    targetSpec: {
+      $schema: "https://vega.github.io/schema/vega/v5.json",
+      width: 320,
+      height: 200,
+      padding: 8,
+      data: [
+        {
+          name: "filteredTable",
+          source: "table",
+          transform: [{ type: "filter", expr: "datum.value >= 7" }],
+        },
+      ],
+      scales: [
+        {
+          name: "xscale",
+          type: "band",
+          domain: { data: "filteredTable", field: "category" },
+          range: "width",
+          padding: 0.15,
+        },
+        {
+          name: "yscale",
+          domain: { data: "filteredTable", field: "value" },
+          nice: true,
+          range: "height",
+        },
+      ],
+      axes: [
+        { orient: "bottom", scale: "xscale" },
+        { orient: "left", scale: "yscale" },
+      ],
+      marks: [
+        {
+          type: "rect",
+          from: { data: "filteredTable" },
+          encode: {
+            enter: {
+              x: { scale: "xscale", field: "category" },
+              width: { scale: "xscale", band: 1 },
+              y: { scale: "yscale", field: "value" },
+              y2: { scale: "yscale", value: 0 },
+              fill: { value: "#0a5c83" },
+            },
+          },
+        },
+      ],
+    },
+    checks: [
+      {
+        type: "dataRowCount",
+        dataName: "filteredTable",
+        expected: 2,
+        message: "Create a filteredTable dataset with only the two rows whose value is at least 7.",
+      },
+      {
+        type: "dataFieldValues",
+        dataName: "filteredTable",
+        field: "category",
+        expected: ["Beta", "Gamma"],
+        message: "Keep Beta and Gamma in the filtered dataset.",
+      },
+      {
+        type: "dataFieldOrder",
+        dataName: "filteredTable",
+        field: "category",
+        expected: ["Beta", "Gamma"],
+        message: "Preserve the filtered rows in their original order.",
+      },
+      {
+        type: "markCount",
+        expected: 2,
+        markType: "rect",
+        message: "Render one bar for each filtered row.",
+      },
+    ],
+  },
 ];
 
 export function getVegaKoanById(koanId: string) {

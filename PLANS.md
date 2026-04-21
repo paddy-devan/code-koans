@@ -538,3 +538,42 @@ Replace the early rendered-summary validation path with a reusable scenegraph ex
 
 ## Status
 - completed
+
+---
+
+# Checkpoint 19 — Dataflow validation
+
+## Goal
+Validate named Vega datasets and simple runtime signals from the running validation view.
+
+## Branch
+`vega-validation-engine`
+
+## Deliverables
+- learner-defined Vega data blocks preserved alongside the injected koan dataset
+- runtime data extraction from validation renders
+- runtime signal extraction from validation renders
+- dataflow-oriented checks:
+  - `dataRowCount`
+  - `dataFieldValues`
+  - `dataFieldOrder`
+  - `signalValue`
+- transform-focused fixture tests
+- one koan using dataflow checks
+
+## Acceptance criteria
+- filter outputs can be validated without spec-shape checks
+- derived datasets can be checked by row count, expected values, and order
+- simple signal defaults can be checked
+- dataflow and scenegraph checks can be combined in one koan
+- missing runtime data fails cleanly rather than crashing validation
+
+## Not in scope
+- semantic chart helper APIs
+- nested group data
+- interaction simulation
+- line, area, facet, or pixel checks
+- LLM-assisted evaluation
+
+## Status
+- completed
