@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { VegaKoan } from "../koans/types";
-import { getVegaKoanById } from "../koans/vegaKoans";
+import { getVegaKoanById, vegaKoans } from "../koans/vegaKoans";
 import { validateVegaSpec } from "./vegaValidation";
 
 const barChartKoan = getVegaKoanById("bar-chart-basics");
 const filterKoan = getVegaKoanById("filter-bars-by-value");
+const scatterplotKoan = getVegaKoanById("scatterplot-basics");
 
 function cloneSpec(spec: Record<string, unknown>) {
   return JSON.parse(JSON.stringify(spec)) as Record<string, unknown>;
@@ -227,5 +228,34 @@ describe("validateVegaSpec dataflow checks", () => {
     });
 
     expect(result).toMatchObject({ passed: true });
+  });
+});
+
+describe("committed Vega koan targets", () => {
+  it.each(vegaKoans)("passes the target spec for $id", async (koan) => {
+    await expect(validateVegaSpec(koan, koan.targetSpec)).resolves.toMatchObject({
+      passed: true,
+    });
+  });
+
+  it("fails scatterplot validation when y values are not visually encoded", async () => {
+    expect(scatterplotKoan).toBeDefined();
+
+    const spec = cloneSpec(scatterplotKoan!.targetSpec);
+    const firstMark = getFirstMark(spec);
+    const encode = firstMark.encode as {
+      enter: {
+        y: unknown;
+      };
+    };
+
+    encode.enter.y = { value: 100 };
+
+    const result = await validateVegaSpec(scatterplotKoan!, spec);
+
+    expect(result.passed).toBe(false);
+    expect(result.results.find((check) => check.message.includes("higher y values"))?.passed).toBe(
+      false,
+    );
   });
 });
