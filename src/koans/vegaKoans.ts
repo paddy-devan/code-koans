@@ -886,3 +886,11 @@ export const vegaKoans: VegaKoan[] = [
 export function getVegaKoanById(koanId: string) {
   return vegaKoans.find((koan) => koan.id === koanId);
 }
+
+export const orderedVegaKoans = [...vegaKoans].sort((firstKoan, secondKoan) => {
+  if (firstKoan.order !== secondKoan.order) {
+    return firstKoan.order - secondKoan.order;
+  }
+
+  return firstKoan.id.localeCompare(secondKoan.id);
+});

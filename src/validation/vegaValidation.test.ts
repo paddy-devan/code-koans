@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { VegaKoan } from "../koans/types";
-import { getVegaKoanById, vegaKoans } from "../koans/vegaKoans";
+import { getVegaKoanById, orderedVegaKoans, vegaKoans } from "../koans/vegaKoans";
 import { validateVegaSpec } from "./vegaValidation";
 
 const barChartKoan = getVegaKoanById("bar-chart-basics");
@@ -232,6 +232,28 @@ describe("validateVegaSpec dataflow checks", () => {
 });
 
 describe("committed Vega koan targets", () => {
+  it("keeps committed koan ids, slugs, and order values unique", () => {
+    const ids = vegaKoans.map((koan) => koan.id);
+    const slugs = vegaKoans.map((koan) => koan.slug);
+    const orders = vegaKoans.map((koan) => koan.order);
+
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(new Set(slugs).size).toBe(slugs.length);
+    expect(new Set(orders).size).toBe(orders.length);
+  });
+
+  it("exposes koans in ascending order", () => {
+    expect(orderedVegaKoans.map((koan) => koan.id)).toEqual([
+      "bar-chart-basics",
+      "sort-bars-descending",
+      "color-by-category",
+      "filter-bars-by-value",
+      "scatterplot-basics",
+      "calculate-derived-values",
+      "signal-threshold-filter",
+    ]);
+  });
+
   it.each(vegaKoans)("passes the target spec for $id", async (koan) => {
     await expect(validateVegaSpec(koan, koan.targetSpec)).resolves.toMatchObject({
       passed: true,

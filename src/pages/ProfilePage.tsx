@@ -6,7 +6,7 @@ import {
   syncAccountProgress,
   type ProgressSource,
 } from "../lib/persistence";
-import { vegaKoans } from "../koans/vegaKoans";
+import { orderedVegaKoans } from "../koans/vegaKoans";
 
 export function ProfilePage() {
   const [authState, setAuthState] = useState<AuthState>({
@@ -111,7 +111,7 @@ export function ProfilePage() {
           </p>
         </div>
         <ul className="profile-koan-list">
-          {vegaKoans.map((koan) => {
+          {orderedVegaKoans.map((koan) => {
             const isCompleted = completedKoanIds.includes(koan.id);
             const attemptCount = attemptCounts[koan.id] ?? 0;
 

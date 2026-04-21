@@ -577,3 +577,38 @@ Validate named Vega datasets and simple runtime signals from the running validat
 
 ## Status
 - completed
+
+---
+
+# Checkpoint 20 — Authoring ergonomics
+
+## Goal
+Make validation checks easy to author, review, and extend without changing engine internals for ordinary beginner koans.
+
+## Branch
+`vega-validation-engine`
+
+## Deliverables
+- current koan schema documentation
+- current validation check schema documentation
+- example recipes for bar, scatterplot, transform, and signal koans
+- fixture test pattern documented for new koans
+- committed target specs covered by validation tests
+- stable ordered koan export for browser/profile display
+
+## Acceptance criteria
+- a new beginner bar, scatterplot, transform, or signal koan can be authored from documentation
+- koan checks read like intended learning outcomes
+- tests show both correct target specs and representative failures
+- koan ids, slugs, and display order are checked for uniqueness
+- semantic helper APIs are deliberately deferred until repetition justifies them
+
+## Not in scope
+- semantic chart helper implementation
+- text label checks
+- line, area, facet, interaction, or pixel checks
+- broad validation error explanation system
+- LLM-assisted evaluation
+
+## Status
+- completed
