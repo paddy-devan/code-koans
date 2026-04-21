@@ -3,7 +3,7 @@ import { getLoginUrl, loadCurrentUser, type AuthState } from "../lib/auth";
 import {
   getCachedProgress,
   loadProgress,
-  mergeCachedProgressToAccount,
+  syncAccountProgress,
   type ProgressSource,
 } from "../lib/persistence";
 import { vegaKoans } from "../koans/vegaKoans";
@@ -25,8 +25,9 @@ export function ProfilePage() {
     void loadCurrentUser().then((nextAuthState) => {
       setAuthState(nextAuthState);
 
-      const progressPromise = nextAuthState.authenticated
-        ? mergeCachedProgressToAccount()
+      const progressPromise =
+        nextAuthState.authenticated && nextAuthState.user
+          ? syncAccountProgress(nextAuthState.user.id)
         : loadProgress();
 
       void progressPromise.then((result) => {

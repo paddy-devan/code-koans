@@ -19,6 +19,7 @@ export type ProgressLoadResult = {
 };
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+const MERGED_USER_IDS_KEY = "code-koans.progress-merged-user-ids.v1";
 
 function getApiUrl(path: string) {
   return `${API_BASE_URL}${path}`;
@@ -123,6 +124,53 @@ export async function mergeCachedProgressToAccount() {
       source: "local" as const,
     };
   }
+}
+
+function readMergedUserIds() {
+  if (typeof window === "undefined") {
+    return new Set<string>();
+  }
+
+  const rawValue = window.localStorage.getItem(MERGED_USER_IDS_KEY);
+
+  if (!rawValue) {
+    return new Set<string>();
+  }
+
+  try {
+    const value = JSON.parse(rawValue);
+
+    return new Set(
+      Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [],
+    );
+  } catch {
+    return new Set<string>();
+  }
+}
+
+function writeMergedUserIds(userIds: Set<string>) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(MERGED_USER_IDS_KEY, JSON.stringify(Array.from(userIds)));
+}
+
+export async function syncAccountProgress(userId: string) {
+  const mergedUserIds = readMergedUserIds();
+
+  if (mergedUserIds.has(userId)) {
+    return loadProgress();
+  }
+
+  const result = await mergeCachedProgressToAccount();
+
+  if (result.source === "remote") {
+    mergedUserIds.add(userId);
+    writeMergedUserIds(mergedUserIds);
+  }
+
+  return result;
 }
 
 export function getCachedProgress() {

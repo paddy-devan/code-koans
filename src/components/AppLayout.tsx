@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { getLoginUrl, loadCurrentUser, logout, type AuthState } from "../lib/auth";
-import { mergeCachedProgressToAccount } from "../lib/persistence";
 import { getTrackKoanPath, getTrackKoansPath, getTrackPath } from "../tracks";
 
 const navItems = [
@@ -21,10 +20,6 @@ export function AppLayout() {
   useEffect(() => {
     void loadCurrentUser().then((nextAuthState) => {
       setAuthState(nextAuthState);
-
-      if (nextAuthState.authenticated) {
-        void mergeCachedProgressToAccount();
-      }
     });
   }, []);
 
