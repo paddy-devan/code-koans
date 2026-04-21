@@ -497,3 +497,44 @@ Make the production account and deployment flow coherent enough to run publicly.
 
 ## Status
 - completed
+
+---
+
+# Checkpoint 18 — Scenegraph validation foundation
+
+## Goal
+Replace the early rendered-summary validation path with a reusable scenegraph extraction layer.
+
+## Branch
+`vega-validation-engine`
+
+## Deliverables
+- validation-only Vega render helper
+- normalized scenegraph item extraction
+- scenegraph-oriented checks:
+  - `markCount`
+  - `markType`
+  - `datumFieldValues`
+  - `relativePosition`
+  - `relativeSize`
+- `bar-chart-basics` migrated to scenegraph checks
+- validation fixtures for passing and failing bar chart submissions
+
+## Acceptance criteria
+- a visually correct alternative solution for `bar-chart-basics` passes
+- wrong mark type fails
+- missing category fails
+- wrong category order fails when order matters
+- wrong relative bar heights fail
+- validation failures remain readable
+- existing spec-shape checks continue to work for older koans
+
+## Not in scope
+- dataflow checks
+- semantic chart helper APIs
+- line, area, facet, or interaction checks
+- pixel comparison
+- LLM-assisted evaluation
+
+## Status
+- completed

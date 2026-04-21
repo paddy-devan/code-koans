@@ -1,6 +1,9 @@
-import type { VegaKoan, VegaKoanCheck } from "../koans/types";
-import { buildRuntimeVegaSpec } from "../lib/vegaSpec";
-import { parse, View } from "vega";
+import type { VegaCheckPrimitive, VegaKoan, VegaKoanCheck } from "../koans/types";
+import {
+  type RenderedVegaState,
+  type SceneItem,
+  renderVegaForValidation,
+} from "./vegaScenegraph";
 
 export type VegaCheckResult = {
   message: string;
@@ -10,16 +13,6 @@ export type VegaCheckResult = {
 export type VegaValidationResult = {
   passed: boolean;
   results: VegaCheckResult[];
-};
-
-type RenderedVegaState = {
-  markCount: number;
-  markTypes: string[];
-  xDomain: Array<string | number>;
-};
-
-type VegaScenegraph = {
-  root: unknown;
 };
 
 function asRecord(value: unknown) {
@@ -38,62 +31,91 @@ function isRenderedCheck(check: VegaKoanCheck) {
   return (
     check.type === "rendered-mark-count" ||
     check.type === "rendered-mark-type" ||
-    check.type === "rendered-x-domain"
+    check.type === "rendered-x-domain" ||
+    check.type === "markCount" ||
+    check.type === "markType" ||
+    check.type === "datumFieldValues" ||
+    check.type === "relativePosition" ||
+    check.type === "relativeSize"
   );
 }
 
-function collectRenderedMarkItems(item: unknown, items: Array<Record<string, unknown>>) {
-  const record = asRecord(item);
-
-  if (!record) {
-    return;
-  }
-
-  const mark = asRecord(record.mark);
-
-  if (mark?.role === "mark") {
-    items.push(record);
-  }
-
-  if (Array.isArray(record.items)) {
-    record.items.forEach((child) => collectRenderedMarkItems(child, items));
-  }
+function getSceneItemsForCheck(renderedState: RenderedVegaState, check: { markType?: string }) {
+  return check.markType
+    ? renderedState.sceneItems.filter((item) => item.markType === check.markType)
+    : renderedState.sceneItems;
 }
 
-async function getRenderedState(
-  spec: Record<string, unknown>,
-  koan: VegaKoan,
-): Promise<RenderedVegaState> {
-  const runtimeSpec = buildRuntimeVegaSpec(spec, koan.dataset);
-  const view = new View(parse(runtimeSpec), { renderer: "none" });
+function getDatumValue(item: SceneItem, field: string) {
+  const value = item.datum?.[field];
 
-  try {
-    await view.runAsync();
+  return typeof value === "string" || typeof value === "number" || typeof value === "boolean"
+    ? value
+    : undefined;
+}
 
-    const renderedItems: Array<Record<string, unknown>> = [];
-    collectRenderedMarkItems((view.scenegraph() as unknown as VegaScenegraph).root, renderedItems);
-
-    const xScale = view.scale("xscale") as { domain?: () => unknown[] } | undefined;
-    const xDomain = xScale?.domain?.();
-
-    return {
-      markCount: renderedItems.length,
-      markTypes: Array.from(
-        new Set(
-          renderedItems
-            .map((item) => asRecord(item.mark)?.marktype)
-            .filter((value): value is string => typeof value === "string"),
-        ),
-      ),
-      xDomain: Array.isArray(xDomain)
-        ? xDomain.filter((value): value is string | number =>
-            typeof value === "string" || typeof value === "number",
-          )
-        : [],
-    };
-  } finally {
-    view.finalize();
+function hasSamePrimitiveValues(actual: VegaCheckPrimitive[], expected: VegaCheckPrimitive[]) {
+  if (actual.length !== expected.length) {
+    return false;
   }
+
+  const sortedActual = [...actual].map(primitiveKey).sort();
+  const sortedExpected = [...expected].map(primitiveKey).sort();
+
+  return sortedActual.every((value, index) => value === sortedExpected[index]);
+}
+
+function primitiveKey(value: VegaCheckPrimitive) {
+  return `${typeof value}:${String(value)}`;
+}
+
+function hasSamePrimitiveOrder(actual: VegaCheckPrimitive[], expected: VegaCheckPrimitive[]) {
+  return actual.length === expected.length && actual.every((value, index) => value === expected[index]);
+}
+
+function getPosition(item: SceneItem, channel: "x" | "y") {
+  return channel === "x" ? item.x : item.y;
+}
+
+function getSize(item: SceneItem, measure: "width" | "height") {
+  const directSize = measure === "width" ? item.width : item.height;
+
+  if (typeof directSize === "number") {
+    return Math.abs(directSize);
+  }
+
+  const start = measure === "width" ? item.x : item.y;
+  const end = measure === "width" ? item.x2 : item.y2;
+
+  return typeof start === "number" && typeof end === "number" ? Math.abs(end - start) : undefined;
+}
+
+function getItemsByExpectedValues(
+  sceneItems: SceneItem[],
+  field: string,
+  expected: VegaCheckPrimitive[],
+) {
+  return expected.map((expectedValue) =>
+    sceneItems.find((item) => getDatumValue(item, field) === expectedValue),
+  );
+}
+
+function hasStrictRelativeOrder(
+  values: number[],
+  order: "ascending" | "descending",
+  tolerance = 0.001,
+) {
+  return values.every((value, index) => {
+    if (index === 0) {
+      return true;
+    }
+
+    const previous = values[index - 1];
+
+    return order === "ascending"
+      ? value > previous + tolerance
+      : value < previous - tolerance;
+  });
 }
 
 function runSpecCheck(spec: Record<string, unknown>, check: VegaKoanCheck): VegaCheckResult {
@@ -138,6 +160,11 @@ function runSpecCheck(spec: Record<string, unknown>, check: VegaKoanCheck): Vega
     case "rendered-mark-count":
     case "rendered-mark-type":
     case "rendered-x-domain":
+    case "markCount":
+    case "markType":
+    case "datumFieldValues":
+    case "relativePosition":
+    case "relativeSize":
       return {
         message: check.message,
         passed: false,
@@ -167,6 +194,65 @@ function runRenderedCheck(
           renderedState.xDomain.length === check.expected.length &&
           renderedState.xDomain.every((value, index) => value === check.expected[index]),
       };
+    case "markCount": {
+      const sceneItems = getSceneItemsForCheck(renderedState, check);
+
+      return {
+        message: check.message,
+        passed: sceneItems.length === check.expected,
+      };
+    }
+    case "markType":
+      return {
+        message: check.message,
+        passed: renderedState.markTypes.includes(check.expected),
+      };
+    case "datumFieldValues": {
+      const actualValues = getSceneItemsForCheck(renderedState, check)
+        .map((item) => getDatumValue(item, check.field))
+        .filter((value): value is VegaCheckPrimitive => value !== undefined);
+
+      return {
+        message: check.message,
+        passed: check.ordered
+          ? hasSamePrimitiveOrder(actualValues, check.expected)
+          : hasSamePrimitiveValues(actualValues, check.expected),
+      };
+    }
+    case "relativePosition": {
+      const sceneItems = getSceneItemsForCheck(renderedState, check);
+      const matchingItems = getItemsByExpectedValues(sceneItems, check.field, check.expected);
+      const positions = matchingItems.map((item) =>
+        item ? getPosition(item, check.channel) : undefined,
+      );
+
+      return {
+        message: check.message,
+        passed:
+          positions.every((position): position is number => typeof position === "number") &&
+          hasStrictRelativeOrder(
+            positions.filter((position): position is number => typeof position === "number"),
+            check.order ?? "ascending",
+            check.tolerance,
+          ),
+      };
+    }
+    case "relativeSize": {
+      const sceneItems = getSceneItemsForCheck(renderedState, check);
+      const matchingItems = getItemsByExpectedValues(sceneItems, check.field, check.expected);
+      const sizes = matchingItems.map((item) => (item ? getSize(item, check.measure) : undefined));
+
+      return {
+        message: check.message,
+        passed:
+          sizes.every((size): size is number => typeof size === "number") &&
+          hasStrictRelativeOrder(
+            sizes.filter((size): size is number => typeof size === "number"),
+            check.order,
+            check.tolerance,
+          ),
+      };
+    }
     case "marks-min-count":
     case "first-mark-type":
     case "first-mark-fill":
@@ -185,7 +271,7 @@ export async function validateVegaSpec(
 ): Promise<VegaValidationResult> {
   try {
     const needsRenderedValidation = koan.checks.some((check) => isRenderedCheck(check));
-    const renderedState = needsRenderedValidation ? await getRenderedState(spec, koan) : null;
+    const renderedState = needsRenderedValidation ? await renderVegaForValidation(spec, koan) : null;
 
     const results = koan.checks.map((check) =>
       isRenderedCheck(check) && renderedState
