@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { loadProgress } from "../lib/persistence";
-import { vegaKoans } from "../koans/vegaKoans";
+import { orderedVegaKoans } from "../koans/vegaKoans";
 
 export function VegaKoanBrowserPage() {
   const [completedKoanIds, setCompletedKoanIds] = useState<string[]>([]);
@@ -18,7 +18,7 @@ export function VegaKoanBrowserPage() {
       <p>Select a koan and track completion through the persistence layer.</p>
 
       <ul className="koan-list">
-        {vegaKoans.map((koan) => (
+        {orderedVegaKoans.map((koan) => (
           <li key={koan.id} className="koan-list-item">
             <Link to={`/vega/koans/${koan.id}`} className="koan-link">
               <span className="koan-link-heading">

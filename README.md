@@ -1,58 +1,33 @@
 # Code Koans
 
-Code Koans is a task-based learning website for niche technical tools and languages.
+Code Koans is a small learning site for practising technical tools through focused exercises.
 
-The initial focus is **Vega koans**: small, discovery-based exercises designed to help users build an intuitive understanding of Vega by solving tasks of increasing difficulty.
+The current track is **Vega**. Each koan gives you a target chart, a dataset, an editable Vega spec, and a live preview. The goal is to discover the important Vega idea by changing the spec until your output matches the task.
 
-The first implementation is Vega only. If Vega-Lite is added later, it should be introduced as a separate track rather than bundled into the initial Vega work.
+The long-term idea is to support other niche tools and languages, but the project is intentionally Vega-first for now.
 
-The broader long-term vision is a multi-track site with sections such as:
+## What You Can Do
 
-- Vega
-- Regex
-- other niche technical tools
+- browse Vega koans
+- edit Vega specs in the browser
+- compare your live preview with a target chart
+- submit your solution for deterministic validation
+- track progress locally or, when signed in, across devices
 
-## Product idea
+The current koans cover basic bars, sorting, color encodings, filters, calculated fields, scatterplots, and simple signal-driven filtering.
 
-Each koan is designed to illuminate a specific concept.
-
-The learner is not primarily taught through explanation first. Instead, the koan should be structured so that solving it requires engaging with the intended concept.
-
-Long term, solutions should be evaluated by the behaviour/output they produce rather than by whether the code matches one exact reference solution.
-
-## Initial scope
-
-Current focus:
-- Vega landing page
-- Vega koan browser
-- Vega koan page
-- profile page
-- static in-repo koan definitions
-- live Vega editing and preview
-- simple validation
-- progress tracking
-
-When Worker-backed persistence is added later, it should become the canonical source of progress data, with browser local storage retained as fallback/cache behavior.
-
-## Design principles
-
-- simple and transparent code
-- minimal dependencies
-- neutral, utilitarian UI
-- small number of reusable page types
-- incremental development
-- placeholder implementations are acceptable when they help keep scope controlled
-
-## Stack
+## Tech Stack
 
 - React
 - TypeScript
 - Vite
 - React Router
+- Vega
 - Cloudflare Workers
-- Cloudflare D1 for progress persistence
+- Cloudflare D1
+- GitHub OAuth for sign-in
 
-## Running locally
+## Run Locally
 
 Install dependencies:
 
@@ -60,153 +35,112 @@ Install dependencies:
 npm install
 ```
 
-Frontend only:
+Run the frontend dev server:
 
 ```bash
 npm run dev
 ```
 
-This runs the Vite dev server only. If the Worker is not running, the app falls back to browser local storage for progress caching so frontend development stays usable.
+This starts the Vite app. If the Worker API is not running, progress falls back to browser local storage, so the koan UI remains usable.
 
-## Progress persistence
-
-Worker-backed progress is stored in D1 with user-scoped tables. Signed-in users are identified through a GitHub OAuth login and a server-side session stored in D1.
-
-Anonymous users can still use local browser progress because the frontend falls back to local storage when account-backed endpoints require authentication. After sign-in, cached local progress is merged into the account-backed D1 record and D1 becomes the canonical source.
-
-## GitHub OAuth setup
-
-Create a GitHub OAuth app for the Worker URL you are deploying. For local Worker development, use:
-
-- Homepage URL: `http://127.0.0.1:8787`
-- Authorization callback URL: `http://127.0.0.1:8787/auth/callback`
-
-For the deployed Worker, use the deployed Worker origin and `/auth/callback`, for example:
-
-```text
-https://code-koans.p-devaney96.workers.dev/auth/callback
-```
-
-Store the OAuth credentials as Wrangler secrets:
+Run tests:
 
 ```bash
-npx wrangler secret put GITHUB_CLIENT_ID
-npx wrangler secret put GITHUB_CLIENT_SECRET
+npm test
 ```
 
-For local Worker development, put the same names in a local `.dev.vars` file. Do not commit that file.
+Build the app:
 
-Worker-hosted app with local D1:
+```bash
+npm run build
+```
 
-1. Create a D1 database in Cloudflare and replace the placeholder `database_id` in `wrangler.jsonc`.
-2. Apply the local migration:
+## Run With The Worker
+
+To run the production-shaped app locally, with Cloudflare Workers serving the React assets and API routes:
 
 ```bash
 npm run d1:migrate:local
-```
-
-3. Start the Worker locally:
-
-```bash
 npm run dev:worker
 ```
 
-`npm run dev:worker` builds the Vite app into `dist/`, then runs `wrangler dev`. This mirrors the production shape: Cloudflare Workers serves the React assets and handles `/api/*` requests from the same Worker-backed application.
+Local GitHub OAuth secrets, if needed, should live in `.dev.vars` and must not be committed.
 
-For active frontend work against the local Worker API, you can still run Vite separately in a second terminal:
-
-```bash
-VITE_API_BASE_URL=http://127.0.0.1:8787 npm run dev
-```
-
-## Deploying to Cloudflare Workers
-
-Production is intended to run as a single Cloudflare Worker deployment:
-
-- static React assets are built to `dist/`
-- Wrangler uploads `dist/` as Worker static assets
-- `/api/*` requests run through `workers/index.ts`
-- client-side routes fall back to the SPA entrypoint
-
-Before deploying:
-
-1. Create the production D1 database if it does not already exist:
+Useful Worker commands:
 
 ```bash
-npx wrangler d1 create code-koans
-```
-
-2. Copy the returned database ID into `wrangler.jsonc`.
-3. Apply remote migrations:
-
-```bash
+npm run d1:migrate:local
 npm run d1:migrate:remote
-```
-
-4. Build and deploy:
-
-```bash
 npm run deploy
 ```
 
-The current backend supports GitHub login, account sessions, and account-backed progress sync.
+## Validation Engine
 
-## Production smoke test
+The Vega track is built around output-oriented validation. The aim is not to check whether a learner wrote the same spec as the reference answer. The aim is to check whether the submitted spec produces the intended result.
 
-After deploying, check the deployed Worker URL:
+At a high level:
 
-```bash
-curl -I https://code-koans.p-devaney96.workers.dev/
-curl -I https://code-koans.p-devaney96.workers.dev/vega/koans/bar-chart-basics
-curl -sS -D - -o /dev/null https://code-koans.p-devaney96.workers.dev/auth/login
-curl https://code-koans.p-devaney96.workers.dev/api/me
+```text
+learner Vega spec
+  -> inject koan dataset as "table"
+  -> run Vega in a validation view
+  -> inspect scenegraph, data outputs, and signals
+  -> run focused checks
+  -> return readable pass/fail results
 ```
 
-Expected results:
+The current engine can validate:
 
-- `/` returns `200` HTML
-- `/vega/koans/bar-chart-basics` returns `200` HTML through the SPA fallback
-- `/auth/login` returns a GitHub redirect when OAuth secrets are configured
-- `/api/me` returns signed-out JSON before login
+- rendered mark count and mark type
+- whether rendered marks contain expected datum values
+- relative visual position, such as left-to-right order
+- relative visual size, such as bar-height order
+- distinct rendered properties, such as category fill colors
+- named data outputs from Vega transforms
+- field values and row order in derived datasets
+- simple signal default values
 
-Then test in the browser:
+This is enough for beginner Vega koans involving:
 
-1. Open the deployed Worker URL.
-2. Sign in with GitHub.
-3. Confirm GitHub redirects back to `/profile`.
-4. Confirm the header shows the signed-in user.
-5. Complete a koan.
-6. Refresh the page and confirm progress remains.
-7. Open another browser or device, sign in with the same GitHub account, and confirm progress is visible.
-8. Sign out and confirm the profile returns to the signed-out state.
+- simple bar charts
+- sorted bars
+- basic color-by-category tasks
+- simple scatterplots
+- filter transforms
+- formula transforms
+- simple signal defaults
 
-## Operations notes
+Current limitations:
 
-- D1 schema changes live in `migrations/`.
-- Apply local migrations with `npm run d1:migrate:local`.
-- Apply remote migrations with `npm run d1:migrate:remote`.
-- Deploy with `npm run deploy`.
-- Store deployed OAuth credentials with `npx wrangler secret put`.
-- Store local OAuth credentials in `.dev.vars`; never commit that file.
-- The Worker is the canonical source of signed-in progress. Browser local storage remains the anonymous fallback/cache.
+- no general visual equivalence engine
+- no pixel comparison
+- no robust validation for line or area charts yet
+- no facet or nested-group validation yet
+- no stacked-chart validation yet
+- no interaction simulation beyond checking signal values
+- limited axis and legend validation
+- no LLM-based pass/fail judging
 
-## Project structure
+The validation code lives in `src/validation/`. Koan definitions live in `src/koans/`.
 
-This will evolve, but the intended shape is roughly:
+For koan authoring details, see `src/koans/README.md`. For the longer validation roadmap, see `docs/vega-validation-engine.md`.
 
+## Project Structure
+
+```text
 src/
-  pages/
-  components/
-  koans/
-  validation/
-  lib/
+  components/   reusable React components
+  koans/        Vega koan definitions and authoring notes
+  lib/          small client utilities
+  pages/        route-level screens
+  validation/   Vega validation engine and tests
+workers/        Cloudflare Worker API
+migrations/     D1 database migrations
+docs/           planning and design notes
+```
 
-## Development approach
+## Development Notes
 
-Development is intentionally organised into checkpoints. See:
-	•	AGENTS.md for repository-specific working rules
-	•	PLANS.md for the current implementation roadmap
+This project is deliberately kept small and inspectable. Prefer straightforward React, explicit TypeScript types, small modules, and focused validation checks over broad abstractions.
 
-## Notes
-
-This project is intentionally being kept understandable for a developer learning how a modern React application fits together. Readability and clarity are preferred over sophistication.
+For the implementation roadmap, see `PLANS.md`.

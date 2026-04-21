@@ -497,3 +497,118 @@ Make the production account and deployment flow coherent enough to run publicly.
 
 ## Status
 - completed
+
+---
+
+# Checkpoint 18 — Scenegraph validation foundation
+
+## Goal
+Replace the early rendered-summary validation path with a reusable scenegraph extraction layer.
+
+## Branch
+`vega-validation-engine`
+
+## Deliverables
+- validation-only Vega render helper
+- normalized scenegraph item extraction
+- scenegraph-oriented checks:
+  - `markCount`
+  - `markType`
+  - `datumFieldValues`
+  - `relativePosition`
+  - `relativeSize`
+- `bar-chart-basics` migrated to scenegraph checks
+- validation fixtures for passing and failing bar chart submissions
+
+## Acceptance criteria
+- a visually correct alternative solution for `bar-chart-basics` passes
+- wrong mark type fails
+- missing category fails
+- wrong category order fails when order matters
+- wrong relative bar heights fail
+- validation failures remain readable
+- existing spec-shape checks continue to work for older koans
+
+## Not in scope
+- dataflow checks
+- semantic chart helper APIs
+- line, area, facet, or interaction checks
+- pixel comparison
+- LLM-assisted evaluation
+
+## Status
+- completed
+
+---
+
+# Checkpoint 19 — Dataflow validation
+
+## Goal
+Validate named Vega datasets and simple runtime signals from the running validation view.
+
+## Branch
+`vega-validation-engine`
+
+## Deliverables
+- learner-defined Vega data blocks preserved alongside the injected koan dataset
+- runtime data extraction from validation renders
+- runtime signal extraction from validation renders
+- dataflow-oriented checks:
+  - `dataRowCount`
+  - `dataFieldValues`
+  - `dataFieldOrder`
+  - `signalValue`
+- transform-focused fixture tests
+- one koan using dataflow checks
+
+## Acceptance criteria
+- filter outputs can be validated without spec-shape checks
+- derived datasets can be checked by row count, expected values, and order
+- simple signal defaults can be checked
+- dataflow and scenegraph checks can be combined in one koan
+- missing runtime data fails cleanly rather than crashing validation
+
+## Not in scope
+- semantic chart helper APIs
+- nested group data
+- interaction simulation
+- line, area, facet, or pixel checks
+- LLM-assisted evaluation
+
+## Status
+- completed
+
+---
+
+# Checkpoint 20 — Authoring ergonomics
+
+## Goal
+Make validation checks easy to author, review, and extend without changing engine internals for ordinary beginner koans.
+
+## Branch
+`vega-validation-engine`
+
+## Deliverables
+- current koan schema documentation
+- current validation check schema documentation
+- example recipes for bar, scatterplot, transform, and signal koans
+- fixture test pattern documented for new koans
+- committed target specs covered by validation tests
+- stable ordered koan export for browser/profile display
+
+## Acceptance criteria
+- a new beginner bar, scatterplot, transform, or signal koan can be authored from documentation
+- koan checks read like intended learning outcomes
+- tests show both correct target specs and representative failures
+- koan ids, slugs, and display order are checked for uniqueness
+- semantic helper APIs are deliberately deferred until repetition justifies them
+
+## Not in scope
+- semantic chart helper implementation
+- text label checks
+- line, area, facet, interaction, or pixel checks
+- broad validation error explanation system
+- LLM-assisted evaluation
+
+## Status
+- completed

@@ -4,6 +4,8 @@ export type VegaKoanDifficulty = "beginner" | "intermediate" | "advanced";
 
 export type VegaDatum = Record<string, string | number>;
 
+export type VegaCheckPrimitive = string | number | boolean;
+
 export type VegaKoanCheck =
   | {
       type: "marks-min-count";
@@ -43,6 +45,79 @@ export type VegaKoanCheck =
   | {
       type: "rendered-x-domain";
       expected: Array<string | number>;
+      message: string;
+    }
+  | {
+      type: "markCount";
+      expected: number;
+      markType?: string;
+      message: string;
+    }
+  | {
+      type: "markType";
+      expected: string;
+      message: string;
+    }
+  | {
+      type: "datumFieldValues";
+      field: string;
+      expected: VegaCheckPrimitive[];
+      markType?: string;
+      ordered?: boolean;
+      message: string;
+    }
+  | {
+      type: "relativePosition";
+      field: string;
+      expected: VegaCheckPrimitive[];
+      channel: "x" | "y";
+      order?: "ascending" | "descending";
+      markType?: string;
+      tolerance?: number;
+      message: string;
+    }
+  | {
+      type: "relativeSize";
+      field: string;
+      expected: VegaCheckPrimitive[];
+      measure: "width" | "height";
+      order: "ascending" | "descending";
+      markType?: string;
+      tolerance?: number;
+      message: string;
+    }
+  | {
+      type: "distinctPropertyValues";
+      property: "fill" | "stroke" | "text" | "opacity";
+      expected: number;
+      markType?: string;
+      message: string;
+    }
+  | {
+      type: "dataRowCount";
+      dataName: string;
+      expected: number;
+      message: string;
+    }
+  | {
+      type: "dataFieldValues";
+      dataName: string;
+      field: string;
+      expected: VegaCheckPrimitive[];
+      ordered?: boolean;
+      message: string;
+    }
+  | {
+      type: "dataFieldOrder";
+      dataName: string;
+      field: string;
+      expected: VegaCheckPrimitive[];
+      message: string;
+    }
+  | {
+      type: "signalValue";
+      signalName: string;
+      expected: VegaCheckPrimitive;
       message: string;
     };
 

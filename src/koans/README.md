@@ -24,233 +24,358 @@ For Vega koans, the learner should primarily work by:
 - experimenting with the spec
 - iterating until the desired result is produced
 
-## Current Vega koan schema
+## Current Vega Koan Schema
 
-The current runtime shape is defined in `src/koans/types.ts`.
+The runtime shape is defined in `src/koans/types.ts`.
 
-A Vega koan currently includes:
+A Vega koan includes:
 
-- `id`
-- `slug`
-- `title`
-- `summary`
-- `instructions`
-- `difficulty`
-- `topic`
-- `order`
-- `dataset`
-- `startingSpec`
-- `targetSpec`
-- `checks`
+- `id`: stable internal id, also used in route URLs
+- `track`: currently always `"vega"`
+- `slug`: readable slug, currently matching `id`
+- `title`, `summary`, `instructions`
+- `difficulty`: `"beginner"`, `"intermediate"`, or `"advanced"`
+- `topic`: short grouping label such as `"marks"`, `"transforms"`, or `"signals"`
+- `order`: unique display order within the Vega track
+- `dataset`: rows injected into Vega as a dataset named `table`
+- `startingSpec`: the editable learner starting point
+- `targetSpec`: the chart shown in the target panel
+- `checks`: deterministic validation rules
 
-The current TypeScript shape is:
+Keep koan definitions plain and explicit. Avoid helper abstractions until the repetition is clearly worse than the indirection.
 
-```ts
-export type VegaKoanDifficulty = "beginner" | "intermediate" | "advanced";
+## Runtime Dataset Rules
 
-export type VegaDatum = Record<string, string | number>;
+Every Vega spec is rendered through `buildRuntimeVegaSpec`.
 
-export type VegaKoanCheck =
-  | {
-      type: "marks-min-count";
-      expected: number;
-      message: string;
-    }
-  | {
-      type: "first-mark-type";
-      expected: string;
-      message: string;
-    }
-  | {
-      type: "first-mark-fill";
-      expected: string;
-      message: string;
-    }
-  | {
-      type: "x-domain-sort-order";
-      expected: "ascending" | "descending";
-      message: string;
-    }
-  | {
-      type: "has-scale";
-      expected: string;
-      message: string;
-    }
-  | {
-      type: "rendered-mark-count";
-      expected: number;
-      message: string;
-    }
-  | {
-      type: "rendered-mark-type";
-      expected: string;
-      message: string;
-    }
-  | {
-      type: "rendered-x-domain";
-      expected: Array<string | number>;
-      message: string;
-    };
-
-export type VegaKoan = {
-  id: string;
-  slug: string;
-  title: string;
-  summary: string;
-  instructions: string;
-  difficulty: VegaKoanDifficulty;
-  topic: string;
-  order: number;
-  dataset: VegaDatum[];
-  startingSpec: Record<string, unknown>;
-  targetSpec: Record<string, unknown>;
-  checks: VegaKoanCheck[];
-};
-```
-
-Keep koan definitions plain and explicit. Avoid helper abstractions that make a single koan harder to read in isolation.
-
-## Validation rules
-
-The project currently supports two classes of validation:
-
-### Spec-shape checks
-
-These inspect the submitted Vega JSON directly.
-
-Available checks:
-- `marks-min-count`
-- `first-mark-type`
-- `first-mark-fill`
-- `x-domain-sort-order`
-- `has-scale`
-
-These are useful when a koan is still in a simpler placeholder-validation phase.
-
-### Rendered-output checks
-
-These render the submitted Vega spec and inspect the deterministic output.
-
-Available checks:
-- `rendered-mark-count`
-- `rendered-mark-type`
-- `rendered-x-domain`
-
-Prefer these when the intended behavior can be expressed by the actual rendered result rather than by one exact code shape.
-
-Validation should stay understandable. Do not add broad or fuzzy “equivalence” logic inside a single koan definition.
-
-## Clear example koan
-
-`bar-chart-basics` in `src/koans/vegaKoans.ts` is the clearest current example because it uses:
-- a small explicit dataset
-- a simple starting spec
-- a complete target spec
-- rendered-output validation
-
-A copyable example in the current style:
+That helper injects:
 
 ```ts
-export const basicBarKoan: VegaKoan = {
-  id: "bar-chart-basics",
-  slug: "bar-chart-basics",
-  title: "Bar Chart Basics",
-  summary: "Build a simple bar chart from categorical data.",
-  instructions:
-    "Use the provided dataset to produce a bar chart with category labels along the horizontal axis and values encoded as bar height.",
-  difficulty: "beginner",
-  topic: "marks",
-  order: 1,
-  dataset: [
-    { category: "A", value: 5 },
-    { category: "B", value: 8 },
-    { category: "C", value: 3 }
-  ],
-  startingSpec: {
-    $schema: "https://vega.github.io/schema/vega/v5.json",
-    width: 320,
-    height: 200,
-    padding: 8,
-    scales: [
-      {
-        name: "xscale",
-        type: "band",
-        domain: { data: "table", field: "category" },
-        range: "width",
-        padding: 0.15
-      },
-      {
-        name: "yscale",
-        domain: { data: "table", field: "value" },
-        nice: true,
-        range: "height"
-      }
-    ],
-    axes: [
-      { orient: "bottom", scale: "xscale" },
-      { orient: "left", scale: "yscale" }
-    ],
-    marks: []
-  },
-  targetSpec: {
-    $schema: "https://vega.github.io/schema/vega/v5.json",
-    width: 320,
-    height: 200,
-    padding: 8,
-    scales: [
-      {
-        name: "xscale",
-        type: "band",
-        domain: { data: "table", field: "category" },
-        range: "width",
-        padding: 0.15
-      },
-      {
-        name: "yscale",
-        domain: { data: "table", field: "value" },
-        nice: true,
-        range: "height"
-      }
-    ],
-    axes: [
-      { orient: "bottom", scale: "xscale" },
-      { orient: "left", scale: "yscale" }
-    ],
-    marks: [
-      {
-        type: "rect",
-        from: { data: "table" },
-        encode: {
-          enter: {
-            x: { scale: "xscale", field: "category" },
-            width: { scale: "xscale", band: 1 },
-            y: { scale: "yscale", field: "value" },
-            y2: { scale: "yscale", value: 0 },
-            fill: { value: "#0a5c83" }
-          }
-        }
-      }
-    ]
-  },
-  checks: [
-    {
-      type: "rendered-mark-count",
-      expected: 3,
-      message: "Render three bar marks for the three categories in the dataset."
-    },
-    {
-      type: "rendered-mark-type",
-      expected: "rect",
-      message: "Render rect marks in the final chart output."
-    },
-    {
-      type: "rendered-x-domain",
-      expected: ["A", "B", "C"],
-      message: "Preserve the expected category order in the rendered x-scale domain."
-    }
-  ]
-};
+{ name: "table", values: koan.dataset }
 ```
+
+Learner-defined `data` blocks are preserved, except for any learner block also named `table`. This means koans can ask learners to create derived datasets such as:
+
+```ts
+data: [
+  {
+    name: "filteredTable",
+    source: "table",
+    transform: [{ type: "filter", expr: "datum.value >= 7" }]
+  }
+]
+```
+
+Use `table` for the provided raw data. Use named derived datasets for transform koans.
+
+## Validation Checks
+
+The project now supports three validation styles.
+
+### Legacy Spec-Shape Checks
+
+These inspect the submitted Vega JSON directly. They are still supported for older koans, but should not be the default for new output-focused koans.
+
+Available checks:
+
+```ts
+{ type: "marks-min-count"; expected: number; message: string }
+{ type: "first-mark-type"; expected: string; message: string }
+{ type: "first-mark-fill"; expected: string; message: string }
+{ type: "x-domain-sort-order"; expected: "ascending" | "descending"; message: string }
+{ type: "has-scale"; expected: string; message: string }
+```
+
+Use these only when the learning goal really is a specific Vega declaration.
+
+### Scenegraph Checks
+
+These render the Vega spec and inspect normalized scenegraph items. Prefer these when the learning goal is visible output.
+
+Available checks:
+
+```ts
+{
+  type: "markCount";
+  expected: number;
+  markType?: string;
+  message: string;
+}
+
+{
+  type: "markType";
+  expected: string;
+  message: string;
+}
+
+{
+  type: "datumFieldValues";
+  field: string;
+  expected: Array<string | number | boolean>;
+  markType?: string;
+  ordered?: boolean;
+  message: string;
+}
+
+{
+  type: "relativePosition";
+  field: string;
+  expected: Array<string | number | boolean>;
+  channel: "x" | "y";
+  order?: "ascending" | "descending";
+  markType?: string;
+  tolerance?: number;
+  message: string;
+}
+
+{
+  type: "relativeSize";
+  field: string;
+  expected: Array<string | number | boolean>;
+  measure: "width" | "height";
+  order: "ascending" | "descending";
+  markType?: string;
+  tolerance?: number;
+  message: string;
+}
+
+{
+  type: "distinctPropertyValues";
+  property: "fill" | "stroke" | "text" | "opacity";
+  expected: number;
+  markType?: string;
+  message: string;
+}
+```
+
+Current robust uses:
+
+- simple vertical bar charts
+- sorted bar charts
+- simple scatterplots using `symbol` marks
+- basic categorical color checks with distinct rendered fills
+- checking that expected source datum reached rendered marks
+- checking relative positions and relative sizes
+
+Current weak spots:
+
+- line and area marks
+- stacked marks
+- facets and nested groups
+- legends and axes
+- text label placement beyond simple future text checks
+- pixel-perfect visual equivalence
+
+### Dataflow And Signal Checks
+
+These inspect named runtime datasets and simple signal values from the running Vega `View`.
+
+Available checks:
+
+```ts
+{
+  type: "dataRowCount";
+  dataName: string;
+  expected: number;
+  message: string;
+}
+
+{
+  type: "dataFieldValues";
+  dataName: string;
+  field: string;
+  expected: Array<string | number | boolean>;
+  ordered?: boolean;
+  message: string;
+}
+
+{
+  type: "dataFieldOrder";
+  dataName: string;
+  field: string;
+  expected: Array<string | number | boolean>;
+  message: string;
+}
+
+{
+  type: "signalValue";
+  signalName: string;
+  expected: string | number | boolean;
+  message: string;
+}
+```
+
+Use these for:
+
+- filters
+- formulas
+- sorted derived data
+- simple aggregate outputs once aggregate koans are added
+- simple signal defaults
+
+Do not use dataflow checks by themselves when the koan also needs to prove that the transformed data was visually encoded. Pair them with scenegraph checks where the rendered result matters.
+
+## Check Recipes
+
+### Basic Bar Chart
+
+Use scenegraph checks:
+
+```ts
+checks: [
+  {
+    type: "markCount",
+    expected: 3,
+    markType: "rect",
+    message: "Render three bar marks."
+  },
+  {
+    type: "datumFieldValues",
+    field: "category",
+    expected: ["A", "B", "C"],
+    markType: "rect",
+    message: "Render a bar for each expected category."
+  },
+  {
+    type: "relativeSize",
+    field: "category",
+    expected: ["B", "A", "C"],
+    measure: "height",
+    order: "descending",
+    markType: "rect",
+    message: "Encode values as relative bar heights."
+  }
+]
+```
+
+### Sorted Bar Chart
+
+Use `relativePosition` when you care about visual order:
+
+```ts
+{
+  type: "relativePosition",
+  field: "category",
+  expected: ["High", "Medium", "Low"],
+  channel: "x",
+  markType: "rect",
+  message: "Place bars left-to-right by descending value."
+}
+```
+
+### Simple Scatterplot
+
+Use `symbol` marks and relative x/y checks:
+
+```ts
+checks: [
+  {
+    type: "markCount",
+    expected: 3,
+    markType: "symbol",
+    message: "Render one point for each row."
+  },
+  {
+    type: "relativePosition",
+    field: "label",
+    expected: ["A", "B", "C"],
+    channel: "x",
+    markType: "symbol",
+    message: "Place points left-to-right by increasing x value."
+  }
+]
+```
+
+For y positions, remember that Vega screen coordinates increase downward. If larger data values should appear higher in the chart, use `order: "descending"` for rendered `y` positions.
+
+### Filter Transform
+
+Ask the learner to create a named derived dataset, then validate the data and rendered marks:
+
+```ts
+checks: [
+  {
+    type: "dataRowCount",
+    dataName: "filteredTable",
+    expected: 2,
+    message: "Create a filteredTable dataset with two rows."
+  },
+  {
+    type: "dataFieldValues",
+    dataName: "filteredTable",
+    field: "category",
+    expected: ["Beta", "Gamma"],
+    message: "Keep Beta and Gamma in the filtered dataset."
+  },
+  {
+    type: "markCount",
+    expected: 2,
+    markType: "rect",
+    message: "Render one bar for each filtered row."
+  }
+]
+```
+
+### Color By Category
+
+When color is the lesson, validate rendered fill values rather than the existence of one specific scale:
+
+```ts
+{
+  type: "distinctPropertyValues",
+  property: "fill",
+  expected: 3,
+  markType: "rect",
+  message: "Render the three categories with three distinct fill colors."
+}
+```
+
+This accepts any implementation that produces distinct rendered fills. It does not require a specific color scale name.
+
+### Formula Transform
+
+Validate the calculated field directly:
+
+```ts
+{
+  type: "dataFieldValues",
+  dataName: "doubledTable",
+  field: "doubleValue",
+  expected: [8, 14, 20],
+  message: "Calculate doubleValue as twice the original value."
+}
+```
+
+### Signal Default
+
+Validate simple signal values:
+
+```ts
+{
+  type: "signalValue",
+  signalName: "threshold",
+  expected: 7,
+  message: "Set the threshold signal to 7."
+}
+```
+
+This validates signal state, not browser event behavior.
+
+## Fixture Test Pattern
+
+Every new koan should be covered by validation tests in `src/validation/vegaValidation.test.ts`.
+
+Minimum test coverage:
+
+- the committed `targetSpec` passes
+- at least one realistic incorrect submission fails the check that matters most
+
+For a new check type, add both:
+
+- a passing fixture that proves the intended correct case
+- a failing fixture that proves the check catches the likely mistake
+
+The existing tests already run every committed target spec through `validateVegaSpec`. When adding a koan, add one failure fixture if the koan introduces a new concept or a new way to use existing checks.
 
 ## Process for adding a new koan
 
